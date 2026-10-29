@@ -1,0 +1,6 @@
+{
+  "name": "StalkRadar - Detector de Visitantes do Instagram",
+  "description": "Descubra quem visitou seu perfil, quem te stalkeia e quem salvou suas fotos no Instagram com análise gamificada e relatório em tempo real.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

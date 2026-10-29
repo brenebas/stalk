@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <script>
+      // Clear cache storage and unregister old service workers to ensure fresh code on every load
+      if (typeof window !== 'undefined') {
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (var name of names) caches.delete(name);
+          });
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var r of registrations) r.unregister();
+          });
+        }
+      }
+      // Compatibility guard for browser extensions attempting to assign window.fetch
+      try {
+        let _currentFetch = typeof window !== 'undefined' && window.fetch ? window.fetch.bind(window) : undefined;
+        Object.defineProperty(window, 'fetch', {
+          get: function () {
+            return _currentFetch;
+          },
+          set: function (fn) {
+            _currentFetch = fn;
+          },
+          configurable: true,
+          enumerable: true,
+        });
+      } catch (err) {
+        // Fallback silently if environment prevents redefining
+      }
+
+      // Suppress unhandled errors originating from external browser extensions
+      window.addEventListener('error', function (event) {
+        if (event && event.filename && event.filename.includes('chrome-extension://')) {
+          event.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
+    <title>StalkRadar - Descubra Quem Visitou Seu Perfil no Instagram</title>
+    <meta name="description" content="Descubra quem visitou seu perfil, quem te stalkeia e quem salvou suas fotos no Instagram com análise gamificada e relatório em tempo real." />
+    <meta property="og:title" content="StalkRadar - Descubra Quem Visitou Seu Perfil no Instagram" />
+    <meta property="og:description" content="Descubra quem visitou seu perfil, quem te stalkeia e quem salvou suas fotos no Instagram com análise gamificada e relatório em tempo real." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#fafafa] text-neutral-900 antialiased selection:bg-rose-500 selection:text-white min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
