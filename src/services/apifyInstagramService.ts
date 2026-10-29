@@ -77,12 +77,21 @@ export async function fetchInstagramProfileApify(rawUsername: string, forceRefre
   }
 
   const executePromise = (async (): Promise<InstagramProfile> => {
-    const apiToken = process.env.APIFY_API_TOKEN;
-    if (!apiToken || !apiToken.trim()) {
+    const rawToken = process.env.APIFY_API_TOKEN || process.env.VITE_APIFY_API_TOKEN || '';
+    const apiToken = rawToken.trim().replace(/^['"]|['"]$/g, '');
+    if (!apiToken) {
       throw new ApifyError(
         'Token da Apify (APIFY_API_TOKEN) não configurado no servidor.',
         500,
         'TOKEN_NOT_CONFIGURED'
+      );
+    }
+
+    if (apiToken.startsWith('sk_live_') || apiToken.startsWith('sk_test_')) {
+      throw new ApifyError(
+        'O token informado (sk_live_...) é uma chave da Stripe e não da Apify. O token da Apify começa com apify_api_...',
+        401,
+        'INVALID_APIFY_TOKEN'
       );
     }
 

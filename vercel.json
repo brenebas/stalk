@@ -6,6 +6,12 @@
   "functions": {
     "api/instagram/profile.ts": {
       "maxDuration": 30
+    },
+    "api/proxy-image.ts": {
+      "maxDuration": 15
+    },
+    "api/token-status.ts": {
+      "maxDuration": 10
     }
   },
   "headers": [

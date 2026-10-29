@@ -29,6 +29,34 @@ app.post('/api/clear-cache', (_req, res) => {
   return res.json({ success: true, message: 'Cache limpo com sucesso.' });
 });
 
+// Endpoint to check token status
+app.get('/api/token-status', (_req, res) => {
+  const rawToken = (process.env.APIFY_API_TOKEN || process.env.VITE_APIFY_API_TOKEN || '').trim().replace(/^['"]|['"]$/g, '');
+
+  if (!rawToken) {
+    return res.json({
+      configured: false,
+      message: 'Nenhum token encontrado em APIFY_API_TOKEN ou VITE_APIFY_API_TOKEN.',
+    });
+  }
+
+  const isStripe = rawToken.startsWith('sk_live_') || rawToken.startsWith('sk_test_');
+  const isApify = rawToken.startsWith('apify_api_');
+
+  return res.json({
+    configured: true,
+    maskedToken: rawToken.slice(0, 10) + '...' + rawToken.slice(-4),
+    tokenLength: rawToken.length,
+    isApifyFormat: isApify,
+    isStripeKey: isStripe,
+    status: isApify
+      ? 'OK: Token da Apify válido e configurado.'
+      : isStripe
+      ? 'ERRO: Esta é uma chave da Stripe (sk_live_...) e não da Apify. Obtenha o token em console.apify.com/account/integrations'
+      : 'ATENÇÃO: O token configurado não começa com apify_api_. Verifique em console.apify.com/account/integrations',
+  });
+});
+
 // API: Official Apify Instagram Profile endpoint: GET /api/instagram/profile?username=
 app.get('/api/instagram/profile', async (req, res) => {
   try {
