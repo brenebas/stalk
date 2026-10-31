@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StalkerVisitor, InstagramProfile, ScanMetrics } from '../types';
 import { AvatarIllustration } from './AvatarIllustration';
 import { InstagramVerifiedBadge } from './StepConfirmProfile';
+import { InstagramRealProfileCard } from './InstagramRealProfileCard';
 import { 
   Lock, 
   Unlock, 
@@ -385,6 +386,16 @@ export const StepResults: React.FC<StepResultsProps> = ({
       {/* Stalker Cards List (Clean, Interactive & Modern) */}
       <div ref={blockedSectionRef} className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         {filteredStalkers.map((stalker) => {
+          // Os 3 perfis gratuitos (2 no início e 1 mais abaixo após os bloqueados) utilizam o design real do Instagram
+          if (stalker.id === 'stk-1' || stalker.id === 'stk-2' || stalker.id === 'stk-7') {
+            return (
+              <InstagramRealProfileCard
+                key={stalker.id}
+                stalker={stalker}
+              />
+            );
+          }
+
           const isRevealed = stalker.isRevealed || isUnlocked;
 
           return (

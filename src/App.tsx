@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { FunnelStep, InstagramProfile, ScanMetrics, StalkerVisitor } from './types';
+import React, { useState, useEffect } from 'react';
+import { FunnelStep, InstagramProfile, ScanMetrics, StalkerVisitor, RealInstagramConnection } from './types';
 import { PRESET_ACCOUNTS, getOrCreateInstagramProfile } from './data/mockProfiles';
-import { generateScanMetrics, generateStalkersList } from './data/stalkersData';
+import { generateScanMetrics, generateStalkersList, applyRealConnectionsToStalkers } from './data/stalkersData';
 import { Navbar } from './components/Navbar';
 import { StepInput } from './components/StepInput';
 import { StepConfirmProfile } from './components/StepConfirmProfile';
@@ -10,6 +10,8 @@ import { StepResults } from './components/StepResults';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Footer } from './components/Footer';
 import { soundFX } from './utils/audio';
+import { APP_CONFIG } from './config';
+import { detectGender } from './utils/genderDetector';
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<FunnelStep>('input');
@@ -19,20 +21,40 @@ export default function App() {
     PRESET_ACCOUNTS[0].followersCount,
     PRESET_ACCOUNTS[0].isPrivate
   );
+  const initialGender = detectGender(PRESET_ACCOUNTS[0].name, PRESET_ACCOUNTS[0].bio, PRESET_ACCOUNTS[0].handle);
   const [metrics, setMetrics] = useState<ScanMetrics>(initialMetrics);
-  const [stalkers, setStalkers] = useState<StalkerVisitor[]>(generateStalkersList(false, initialMetrics.visitorsToday));
+  const [stalkers, setStalkers] = useState<StalkerVisitor[]>(generateStalkersList(false, initialMetrics.visitorsToday, initialGender));
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [realConnections, setRealConnections] = useState<RealInstagramConnection[]>([]);
 
   // Modals state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isSearchingProfile, setIsSearchingProfile] = useState(false);
   const [searchError, setSearchError] = useState('');
 
+  // Auto-fetch real connections whenever profile changes or is mounted
+  useEffect(() => {
+    if (currentProfile?.handle) {
+      const userGender = detectGender(currentProfile.name, currentProfile.bio, currentProfile.handle);
+      const thirdHandle = APP_CONFIG.getThirdProfileHandle(userGender);
+      fetch(`/api/instagram/connections?username=${encodeURIComponent(currentProfile.handle)}&thirdProfile=${encodeURIComponent(thirdHandle)}&gender=${userGender}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.connections && Array.isArray(data.connections) && data.connections.length > 0) {
+            setRealConnections(data.connections);
+            setStalkers((current) => applyRealConnectionsToStalkers(current, data.connections, currentProfile));
+          }
+        })
+        .catch((err) => console.warn('Conexões Apify background effect info:', err));
+    }
+  }, [currentProfile?.handle]);
+
   // Handlers
   const handleSubmitHandle = async (rawHandle: string) => {
     const clean = rawHandle.replace(/^@/, '').trim();
     setIsSearchingProfile(true);
     setSearchError('');
+    setRealConnections([]);
 
     try {
       // Connect to the official Apify Instagram backend API route
@@ -47,11 +69,25 @@ export default function App() {
         );
         setCurrentProfile(liveData);
         setMetrics(liveMetrics);
-        setStalkers(generateStalkersList(false, liveMetrics.visitorsToday));
+        const userGender = detectGender(liveData.name, liveData.bio, liveData.handle);
+        const thirdHandle = APP_CONFIG.getThirdProfileHandle(userGender);
+        const baseStalkers = generateStalkersList(false, liveMetrics.visitorsToday, userGender);
+        setStalkers(baseStalkers);
         setIsUnlocked(false);
         setSearchError('');
         setCurrentStep('confirm_profile');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Puxa as conexões reais (quem o perfil segue e seguidores) via Apify para os perfis gratuitos
+        fetch(`/api/instagram/connections?username=${encodeURIComponent(clean)}&thirdProfile=${encodeURIComponent(thirdHandle)}&gender=${userGender}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.connections && Array.isArray(data.connections) && data.connections.length > 0) {
+              setRealConnections(data.connections);
+              setStalkers((current) => applyRealConnectionsToStalkers(current, data.connections, liveData));
+            }
+          })
+          .catch((err) => console.warn('Conexões Apify background info:', err));
       } else if (response.status === 404) {
         setSearchError('Esse perfil não existe, por favor coloque um perfil válido');
       } else {
@@ -63,9 +99,10 @@ export default function App() {
           fallbackData.followersCount,
           fallbackData.isPrivate
         );
+        const fallbackGender = detectGender(fallbackData.name, fallbackData.bio, fallbackData.handle);
         setCurrentProfile(fallbackData);
         setMetrics(fallbackMetrics);
-        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday));
+        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday, fallbackGender));
         setIsUnlocked(false);
         setSearchError('');
         setCurrentStep('confirm_profile');
@@ -107,7 +144,10 @@ export default function App() {
     } catch {}
 
     if (!stalkers || stalkers.length === 0) {
-      setStalkers(generateStalkersList(false, metrics?.visitorsToday || 24));
+      const base = generateStalkersList(false, metrics?.visitorsToday || 24);
+      setStalkers(realConnections.length > 0 ? applyRealConnectionsToStalkers(base, realConnections, currentProfile) : base);
+    } else if (realConnections.length > 0) {
+      setStalkers((current) => applyRealConnectionsToStalkers(current, realConnections, currentProfile));
     }
 
     setCurrentStep('results');
@@ -119,19 +159,22 @@ export default function App() {
   const handleReset = () => {
     setCurrentStep('input');
     setIsUnlocked(false);
+    setRealConnections([]);
     setStalkers(generateStalkersList(false, metrics.visitorsToday));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleUnlockSuccess = () => {
     setIsUnlocked(true);
-    setStalkers(generateStalkersList(true, metrics.visitorsToday));
+    const base = generateStalkersList(true, metrics.visitorsToday);
+    setStalkers(realConnections.length > 0 ? applyRealConnectionsToStalkers(base, realConnections, currentProfile.handle) : base);
   };
 
   const handleToggleSimulateUnlock = () => {
     const nextState = !isUnlocked;
     setIsUnlocked(nextState);
-    setStalkers(generateStalkersList(nextState, metrics.visitorsToday));
+    const base = generateStalkersList(nextState, metrics.visitorsToday);
+    setStalkers(realConnections.length > 0 ? applyRealConnectionsToStalkers(base, realConnections, currentProfile.handle) : base);
   };
 
   return (

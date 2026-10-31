@@ -2,7 +2,12 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { fetchInstagramProfileApify, ApifyError, clearApifyCache } from './src/services/apifyInstagramService';
+import { 
+  fetchInstagramProfileApify, 
+  fetchInstagramConnectionsApify, 
+  ApifyError, 
+  clearApifyCache 
+} from './src/services/apifyInstagramService';
 
 dotenv.config();
 
@@ -88,6 +93,31 @@ app.get('/api/instagram/profile', async (req, res) => {
   }
 });
 
+// API: Get real connections (following & followers) using Apify
+app.get('/api/instagram/connections', async (req, res) => {
+  try {
+    const username = (req.query.username as string) || '';
+    const thirdProfile = (req.query.thirdProfile as string) || '';
+    const gender = (req.query.gender as 'female' | 'male') || undefined;
+    if (!username.trim()) {
+      return res.status(400).json({
+        error: 'O parâmetro username é obrigatório.',
+        code: 'MISSING_USERNAME',
+      });
+    }
+
+    const connections = await fetchInstagramConnectionsApify(username, false, thirdProfile, gender);
+    return res.json({ connections });
+  } catch (error: any) {
+    if (error?.name !== 'AbortError') {
+      console.error('Erro ao buscar conexões reais do Instagram:', error);
+    }
+    return res.status(200).json({
+      connections: [],
+    });
+  }
+});
+
 // Backward-compatible alias: GET /api/instagram/:handle
 app.get('/api/instagram/:handle', async (req, res) => {
   try {
@@ -120,15 +150,24 @@ app.get('/api/instagram/:handle', async (req, res) => {
 // API: Proxy Instagram CDN images to prevent HTTP 403 Forbidden from hotlinking protection
 app.get('/api/proxy-image', async (req, res) => {
   try {
-    const imageUrl = req.query.url as string;
+    let imageUrl = req.query.url as string;
     if (!imageUrl) {
       return res.status(400).send('URL não informada');
     }
 
+    // Unwrap if accidentally double-proxied or nested
+    while (imageUrl.includes('/api/proxy-image?url=')) {
+      const idx = imageUrl.indexOf('/api/proxy-image?url=');
+      imageUrl = decodeURIComponent(imageUrl.slice(idx + '/api/proxy-image?url='.length));
+    }
+
+    // Clean up HTML entities in signed CDN query parameters
+    imageUrl = imageUrl.replace(/&amp;/g, '&');
+
     // Safety check: only proxy legitimate image domains
     const parsed = new URL(imageUrl);
-    const validDomains = ['cdninstagram.com', 'fbcdn.net', 'instagram.com', 'fbsbx.com'];
-    const isDomainAllowed = validDomains.some(d => parsed.hostname.endsWith(d));
+    const validDomains = ['cdninstagram.com', 'fbcdn.net', 'instagram.com', 'fbsbx.com', 'facebook.com', 'akamaihd.net'];
+    const isDomainAllowed = validDomains.some(d => parsed.hostname.endsWith(d)) || parsed.hostname.includes('cdninstagram') || parsed.hostname.includes('fbcdn');
 
     if (!isDomainAllowed) {
       return res.status(403).send('Domínio não permitido');

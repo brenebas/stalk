@@ -36,11 +36,11 @@ test('generateScanMetrics returns plausible metrics and scales intelligently wit
   assert.ok(metricsHuge.savedPostsCount >= 1000);
 });
 
-test('generateStalkersList returns 2 revealed and 16 blurred by default, or all revealed when unlocked', () => {
+test('generateStalkersList returns 3 revealed and 15 blurred by default, or all revealed when unlocked', () => {
   const lockedList = generateStalkersList(false);
   assert.equal(lockedList.length, 18);
   const revealedLocked = lockedList.filter(s => s.isRevealed);
-  assert.equal(revealedLocked.length, 2);
+  assert.equal(revealedLocked.length, 3);
 
   const unlockedList = generateStalkersList(true);
   assert.equal(unlockedList.length, 18);
@@ -74,3 +74,51 @@ test('sanitizeAndValidateUsername validates and cleans handles properly', async 
   assert.throws(() => sanitizeAndValidateUsername('@user!invalid#'), (err: any) => err instanceof ApifyError && err.code === 'INVALID_USERNAME');
 });
 
+test('the 3 free stalker profiles have 2 females and 1 male for both female and male users, with correct 3rd handles', async () => {
+  const { APP_CONFIG } = await import('../src/config.ts');
+  assert.equal(APP_CONFIG.getThirdProfileHandle('female'), 'vitor_ma0');
+  assert.equal(APP_CONFIG.getThirdProfileHandle('male'), 'lella_silv');
+
+  // Case 1: Researched profile is a woman
+  const femaleUserList = generateStalkersList(false, undefined, 'female');
+  const femaleUserFree = femaleUserList.filter(s => s.isRevealed);
+  assert.equal(femaleUserFree.length, 3);
+  assert.equal(femaleUserFree.filter(s => s.gender === 'female').length, 2);
+  assert.equal(femaleUserFree.filter(s => s.gender === 'male').length, 1);
+  assert.equal(femaleUserFree[2].handle, 'vitor_ma0');
+  assert.equal(femaleUserFree[2].gender, 'male');
+  assert.equal(femaleUserFree[2].followRelationship, 'neither');
+
+  // Case 2: Researched profile is a man
+  const maleUserList = generateStalkersList(false, undefined, 'male');
+  const maleUserFree = maleUserList.filter(s => s.isRevealed);
+  assert.equal(maleUserFree.length, 3);
+  assert.equal(maleUserFree.filter(s => s.gender === 'female').length, 2);
+  assert.equal(maleUserFree.filter(s => s.gender === 'male').length, 1);
+  assert.equal(maleUserFree[2].handle, 'lella_silv');
+  assert.equal(maleUserFree[2].gender, 'female');
+  assert.equal(maleUserFree[2].followRelationship, 'neither');
+
+  // Verify positioning: 2 free profiles at top, then blocked profiles, then 1 free profile below
+  assert.equal(femaleUserList[0].id, 'stk-1');
+  assert.equal(femaleUserList[0].isRevealed, true);
+  assert.equal(femaleUserList[1].id, 'stk-2');
+  assert.equal(femaleUserList[1].isRevealed, true);
+  assert.equal(femaleUserList[2].isRevealed, false); // stk-3 locked
+  assert.equal(femaleUserList[3].isRevealed, false); // stk-4 locked
+  assert.equal(femaleUserList[4].isRevealed, false); // stk-5 locked
+  assert.equal(femaleUserList[5].isRevealed, false); // stk-6 locked
+  assert.equal(femaleUserList[6].id, 'stk-7');
+  assert.equal(femaleUserList[6].isRevealed, true);  // stk-7 revealed below blocked ones
+});
+
+test('detectGender correctly identifies gender based on names, bios, and pronouns', async () => {
+  const { detectGender } = await import('../src/utils/genderDetector.ts');
+  
+  assert.equal(detectGender('Mariana Silva', 'Ela/dela'), 'female');
+  assert.equal(detectGender('Camila Santos', '✨ Vivendo um dia de cada vez'), 'female');
+  assert.equal(detectGender('Larissa Manoela', ''), 'female');
+  assert.equal(detectGender('Rodrigo Ferreira', 'Ele/dele'), 'male');
+  assert.equal(detectGender('Lucas Mendes', 'Engenharia & Lifestyle'), 'male');
+  assert.equal(detectGender('Neymar Jr', 'Atleta'), 'male');
+});

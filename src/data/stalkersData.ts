@@ -1,4 +1,5 @@
-import { StalkerVisitor, ScanMetrics } from '../types';
+import { StalkerVisitor, ScanMetrics, RealInstagramConnection, InstagramProfile } from '../types';
+import { detectGender } from '../utils/genderDetector';
 
 export function generateScanMetrics(
   handle: string,
@@ -82,47 +83,91 @@ export function generateScanMetrics(
   };
 }
 
-export function generateStalkersList(isUnlocked: boolean = false, targetCount?: number): StalkerVisitor[] {
+export function generateStalkersList(
+  isUnlocked: boolean = false,
+  targetCount?: number,
+  targetUserGender: 'female' | 'male' = 'female'
+): StalkerVisitor[] {
+  const isFemaleUser = targetUserGender === 'female';
+
   const baseList: StalkerVisitor[] = [
     {
       id: 'stk-1',
-      name: 'Mariana Duarte',
-      handle: 'mari_duarte96',
-      maskedHandle: 'mari_duarte96',
-      avatarSeed: 'Mariana',
-      avatarColor: 'from-pink-500 to-rose-500',
-      gender: 'female',
+      name: isFemaleUser ? 'Mariana Duarte' : 'Matheus Borges',
+      handle: isFemaleUser ? 'mari_duarte96' : 'matheus.borges',
+      maskedHandle: isFemaleUser ? 'mari_duarte96' : 'matheus.borges',
+      avatarSeed: isFemaleUser ? 'Mariana' : 'Matheus',
+      avatarColor: isFemaleUser ? 'from-pink-500 to-rose-500' : 'from-blue-600 to-indigo-700',
+      avatarUrl: isFemaleUser
+        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80'
+        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+      gender: isFemaleUser ? 'female' : 'male',
       isRevealed: true,
       isPrivate: false,
+      followRelationship: 'they_follow_you',
+      isFollowing: false,
+      isFollower: true,
       visitsToday: 6,
       lastVisitAgo: 'há 18 min',
       frequency: 'Muito Alta',
       relationshipCategory: 'Amigo Próximo',
-      curiosityHint: 'Visitou seu perfil 6x nos últimos 7 dias e abriu seus últimos 2 stories 3 vezes seguidas.',
+      curiosityHint: 'Segue você, mas você não segue de volta. Visitou seu perfil 6x nos últimos 7 dias e abriu seus últimos 2 stories 3 vezes seguidas.',
       suspicionScore: 94,
       commonFriendsCount: 14,
-      storyViewsWithoutFollowing: 3
+      storyViewsWithoutFollowing: 3,
+      postsCount: 3,
+      followersCount: 428,
+      followingCount: 312,
+      bio: isFemaleUser ? '✨ Vivendo um dia de cada vez 📍 SP' : '⚡ Engenharia & Lifestyle 📍 SP',
+      mutualFriendsAvatars: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
+        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=80&q=80',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=80&q=80'
+      ],
+      mutualFriendsText: 'Segue você · Seguido(a) por gabriel.lima, beatriz_santos e outras 12 pessoas',
+      postImages: [
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
+      ]
     },
     {
       id: 'stk-2',
-      name: 'Rodrigo Ferreira',
-      handle: 'rodrigo.ferr',
-      maskedHandle: 'rodrigo.ferr',
-      avatarSeed: 'Rodrigo',
-      avatarColor: 'from-blue-500 to-cyan-500',
-      gender: 'male',
+      name: 'Carolina Mendes',
+      handle: 'carol_mendes_rj',
+      maskedHandle: 'carol_mendes_rj',
+      avatarSeed: 'Carolina',
+      avatarColor: 'from-purple-500 to-pink-600',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      gender: 'female',
       isRevealed: true,
       isPrivate: false,
-      visitsToday: 4,
-      lastVisitAgo: 'há 42 min',
+      followRelationship: 'mutual',
+      isFollowing: true,
+      isFollower: true,
+      visitsToday: 5,
+      lastVisitAgo: 'há 32 min',
       frequency: 'Alta',
-      relationshipCategory: 'Crush Secreto',
-      curiosityHint: 'Visualizou suas últimas fotos de perfil e passou 3min 40s rolando seu feed.',
-      suspicionScore: 88,
+      relationshipCategory: 'Amigo Próximo',
+      curiosityHint: 'Vocês se seguem mutuamente. Visualizou suas últimas fotos de perfil e passou 3min 40s rolando seu feed esta semana.',
+      suspicionScore: 91,
       commonFriendsCount: 8,
-      savedPhotosCount: 1
+      savedPhotosCount: 1,
+      postsCount: 2,
+      followersCount: 310,
+      followingCount: 285,
+      bio: '🌴 Carioca | Beach, life & coffee ☕',
+      mutualFriendsAvatars: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80'
+      ],
+      mutualFriendsText: 'Seguem-se · Seguido(a) por camila_azevedo, lucas.moraes e outras 6 pessoas',
+      postImages: [
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
+      ]
     },
-    // The following 16 are blurred by default (unless isUnlocked is true)
+    // Os perfis a seguir ficam bloqueados por padrão entre os gratuitos
     {
       id: 'stk-3',
       name: isUnlocked ? 'Guilherme Silva' : 'G********* S****',
@@ -145,12 +190,12 @@ export function generateStalkersList(isUnlocked: boolean = false, targetCount?: 
     },
     {
       id: 'stk-4',
-      name: isUnlocked ? 'Carolina Mendes' : 'C******* M*****',
-      handle: isUnlocked ? 'carol_mendes_rj' : 'carol_*****',
-      maskedHandle: 'carol_*****',
-      avatarSeed: 'Carolina',
+      name: isUnlocked ? 'Felipe Santos' : 'F***** S*****',
+      handle: isUnlocked ? 'felipe_santos' : 'felipe_****',
+      maskedHandle: 'felipe_****',
+      avatarSeed: 'Felipe',
       avatarColor: 'from-purple-500 to-pink-600',
-      gender: 'female',
+      gender: 'male',
       isRevealed: isUnlocked,
       isPrivate: true,
       visitsToday: 5,
@@ -199,24 +244,41 @@ export function generateStalkersList(isUnlocked: boolean = false, targetCount?: 
       suspicionScore: 89,
       commonFriendsCount: 25
     },
+    // Perfil 3 Gratuito (+1 liberado posicionado mais abaixo após os bloqueados)
+    // Se quem pesquisa for mulher: perfil masculino @vitor_ma0
+    // Se quem pesquisa for homem: perfil feminino @lella_silv
     {
       id: 'stk-7',
-      name: isUnlocked ? 'Mateus Costa' : 'M***** C****',
-      handle: isUnlocked ? 'mateus_costa94' : 'm******_costa',
-      maskedHandle: 'm******_costa',
-      avatarSeed: 'Mateus',
-      avatarColor: 'from-violet-500 to-fuchsia-600',
-      gender: 'male',
-      isRevealed: isUnlocked,
+      name: isFemaleUser ? 'Vítor Machado' : 'Lella Silva',
+      handle: isFemaleUser ? 'vitor_ma0' : 'lella_silv',
+      maskedHandle: isFemaleUser ? 'vitor_ma0' : 'lella_silv',
+      avatarSeed: isFemaleUser ? 'Vítor' : 'Lella',
+      avatarColor: isFemaleUser ? 'from-blue-500 to-cyan-500' : 'from-rose-500 to-pink-500',
+      avatarUrl: isFemaleUser
+        ? 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'
+        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      gender: isFemaleUser ? 'male' : 'female',
+      isRevealed: true,
       isPrivate: true,
+      followRelationship: 'neither',
+      isFollowing: false,
+      isFollower: false,
       visitsToday: 8,
       lastVisitAgo: 'há 1d 3h 10min',
       frequency: 'Muito Alta',
       relationshipCategory: 'Stalker Noturno',
-      curiosityHint: 'Acessou seu perfil de madrugada entre 01:30 e 03:15 e deu zoom nos seus destaques.',
+      curiosityHint: 'Perfil externo: nenhum de vocês se segue. Encontrou seu perfil por busca direta e visitou na madrugada 4 vezes esta semana.',
       suspicionScore: 97,
-      commonFriendsCount: 5
+      commonFriendsCount: 0,
+      savedPhotosCount: 1,
+      postsCount: 0,
+      followersCount: isFemaleUser ? 141 : 382,
+      followingCount: isFemaleUser ? 133 : 290,
+      bio: isFemaleUser ? '⚡ Engenharia & Lifestyle 📍 RJ' : '✨ Vivendo o agora | Design & Moda 🤍',
+      mutualFriendsAvatars: [],
+      mutualFriendsText: 'Perfil sugerido para você'
     },
+
     {
       id: 'stk-8',
       name: isUnlocked ? 'Bruno Nogueira' : 'B**** N*******',
@@ -506,4 +568,235 @@ export function generateStalkersList(isUnlocked: boolean = false, targetCount?: 
   }
 
   return [...baseList, ...extraList];
+}
+
+/**
+ * Integrates real following/follower accounts fetched from Apify into the 3 free profiles:
+ * 1. "a pessoa me segue mas eu não sigo de volta" (they_follow_you) - Feminino
+ * 2. "nós nos seguimos" (mutual) - Feminino
+ * 3. "ninguém se segue, um perfil mais aleatório" (neither) - Masculino
+ * Distribuição garantida: 2 perfis femininos e 1 masculino.
+ */
+export function applyRealConnectionsToStalkers(
+  stalkers: StalkerVisitor[],
+  connections: RealInstagramConnection[],
+  targetHandleOrProfile?: string | InstagramProfile
+): StalkerVisitor[] {
+  if (!connections || connections.length === 0 || !Array.isArray(stalkers) || stalkers.length < 3) {
+    return stalkers;
+  }
+
+  const updated = [...stalkers];
+
+  const targetHandle = typeof targetHandleOrProfile === 'object' && targetHandleOrProfile !== null
+    ? (targetHandleOrProfile.handle || 'usuario')
+    : (targetHandleOrProfile || 'usuario');
+
+  const toProxyUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('/api/proxy-image')) return url;
+    if (url.includes('cdninstagram.com') || url.includes('fbcdn.net') || url.includes('fbsbx.com') || url.includes('instagram.com')) {
+      return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  };
+
+  const targetProfile = typeof targetHandleOrProfile === 'object' && targetHandleOrProfile !== null
+    ? targetHandleOrProfile
+    : null;
+  const targetUserGender: 'female' | 'male' = targetProfile
+    ? detectGender(targetProfile.name, targetProfile.bio, targetProfile.handle)
+    : detectGender('', '', typeof targetHandleOrProfile === 'string' ? targetHandleOrProfile : 'usuario');
+
+  // Separa as conexões reais por gênero detectado
+  const femaleConns: RealInstagramConnection[] = [];
+  const maleConns: RealInstagramConnection[] = [];
+
+  for (const c of connections) {
+    const detected = c.gender || detectGender(c.fullName, c.bio, c.username);
+    if (detected === 'female') {
+      femaleConns.push(c);
+    } else {
+      maleConns.push(c);
+    }
+  }
+
+  // 3. Identifica conn3 primeiro (o 3º perfil externo onde ninguém se segue):
+  // Se quem pesquisa for mulher -> @vitor_ma0 (masculino)
+  // Se quem pesquisa for homem -> @lella_silv (feminino)
+  const stk7Index = updated.findIndex(s => s.id === 'stk-7');
+  const target3ExpectedHandle = targetUserGender === 'female' ? 'vitor_ma0' : 'lella_silv';
+  const conn3 = connections.find(c => c.username.toLowerCase() === target3ExpectedHandle)
+    || connections[2]
+    || connections.find(c => c.username.toLowerCase() === 'vitor_ma0' || c.username.toLowerCase() === 'lella_silv')
+    || (targetUserGender === 'female' ? maleConns[0] : femaleConns[0]);
+
+  // Candidatos 1 e 2 para garantir 2 mulheres e 1 homem no total:
+  // Se mulher: conn3 é homem (@vitor_ma0) -> conn1 e conn2 DEVEM ser mulheres
+  // Se homem: conn3 é mulher (@lella_silv) -> entre conn1 e conn2 DEVE haver 1 homem e 1 mulher
+  let conn1: RealInstagramConnection | undefined;
+  let conn2: RealInstagramConnection | undefined;
+
+  if (targetUserGender === 'female') {
+    const availableFemales = femaleConns.filter(c => c.username.toLowerCase() !== conn3?.username.toLowerCase());
+    conn1 = availableFemales[0] || connections.find(c => c.username.toLowerCase() !== conn3?.username.toLowerCase()) || connections[0];
+    conn2 = availableFemales.filter(c => c.username.toLowerCase() !== conn1?.username.toLowerCase())[0]
+      || connections.find(c => c.username.toLowerCase() !== conn3?.username.toLowerCase() && c.username.toLowerCase() !== conn1?.username.toLowerCase())
+      || connections[1];
+  } else {
+    // Quem pesquisa é homem: conn3 é mulher (@lella_silv).
+    // conn1 (dos seguidores): masculino
+    const availableMales = maleConns.filter(c => c.username.toLowerCase() !== conn3?.username.toLowerCase());
+    conn1 = availableMales[0] || connections.find(c => c.username.toLowerCase() !== conn3?.username.toLowerCase()) || connections[0];
+
+    // conn2 (dos seguidos): feminino
+    const availableFemales = femaleConns.filter(c => c.username.toLowerCase() !== conn3?.username.toLowerCase() && c.username.toLowerCase() !== conn1?.username.toLowerCase());
+    conn2 = availableFemales[0] || connections.find(c => c.username.toLowerCase() !== conn3?.username.toLowerCase() && c.username.toLowerCase() !== conn1?.username.toLowerCase()) || connections[1];
+  }
+
+  // 1. Perfil 1:
+  if (conn1 && updated[0]) {
+    const pic1 = conn1.profilePicUrlHD || conn1.profilePicUrl;
+    const proxyPic1 = pic1 ? toProxyUrl(pic1) : updated[0].avatarUrl;
+    const postImgs1 = (typeof conn1.postsCount === 'number' && conn1.postsCount === 0)
+      ? []
+      : (conn1.postImages && conn1.postImages.length > 0)
+      ? conn1.postImages.map(toProxyUrl)
+      : (conn1.postsCount && conn1.postsCount > 0 ? updated[0].postImages : []);
+
+    const isConn1Following = typeof conn1.isFollowing === 'boolean'
+      ? conn1.isFollowing
+      : (conn1.followRelationship === 'mutual');
+    const isConn1Follower = typeof conn1.isFollower === 'boolean'
+      ? conn1.isFollower
+      : (conn1.followRelationship !== 'neither');
+
+    const gender1 = conn1.gender || detectGender(conn1.fullName, conn1.bio, conn1.username);
+
+    updated[0] = {
+      ...updated[0],
+      handle: conn1.username,
+      maskedHandle: conn1.username,
+      name: conn1.fullName && conn1.fullName.trim() ? conn1.fullName : conn1.username,
+      avatarUrl: proxyPic1,
+      gender: gender1,
+      isRevealed: true,
+      followRelationship: conn1.followRelationship || (isConn1Following && isConn1Follower ? 'mutual' : isConn1Following ? 'mutual' : isConn1Follower ? 'they_follow_you' : 'neither'),
+      isFollowing: isConn1Following,
+      isFollower: isConn1Follower,
+      bio: conn1.bio !== undefined && conn1.bio !== null ? conn1.bio : updated[0].bio,
+      followersCount: typeof conn1.followersCount === 'number' ? conn1.followersCount : updated[0].followersCount,
+      followingCount: typeof conn1.followingCount === 'number' ? conn1.followingCount : updated[0].followingCount,
+      postsCount: typeof conn1.postsCount === 'number' ? conn1.postsCount : updated[0].postsCount,
+      isVerified: conn1.isVerified,
+      isPrivate: conn1.isPrivate,
+      postImages: postImgs1,
+      curiosityHint: isConn1Following
+        ? `Vocês se seguem mutuamente. Visualizou suas publicações recentes e abriu seus últimos stories ${updated[0].visitsToday}x nos últimos 7 dias.`
+        : `Segue você, mas você não segue de volta. Visitou seu perfil ${updated[0].visitsToday}x nos últimos 7 dias e abriu seus últimos stories.`,
+      mutualFriendsText: isConn1Following
+        ? `Seguem-se · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[0].commonFriendsCount - 1)} pessoas`
+        : `Segue você · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[0].commonFriendsCount - 1)} pessoas`,
+      mutualFriendsAvatars: connections.slice(1, 4)
+        .map(c => toProxyUrl(c.profilePicUrlHD || c.profilePicUrl))
+        .filter(Boolean),
+    };
+  }
+
+  // 2. Perfil 2:
+  if (conn2 && updated[1]) {
+    const pic2 = conn2.profilePicUrlHD || conn2.profilePicUrl;
+    const proxyPic2 = pic2 ? toProxyUrl(pic2) : updated[1].avatarUrl;
+    const postImgs2 = (typeof conn2.postsCount === 'number' && conn2.postsCount === 0)
+      ? []
+      : (conn2.postImages && conn2.postImages.length > 0)
+      ? conn2.postImages.map(toProxyUrl)
+      : (conn2.postsCount && conn2.postsCount > 0 ? updated[1].postImages : []);
+
+    const isConn2Following = typeof conn2.isFollowing === 'boolean'
+      ? conn2.isFollowing
+      : true;
+    const isConn2Follower = typeof conn2.isFollower === 'boolean'
+      ? conn2.isFollower
+      : (conn2.followRelationship === 'mutual');
+
+    const gender2 = conn2.gender || detectGender(conn2.fullName, conn2.bio, conn2.username);
+
+    updated[1] = {
+      ...updated[1],
+      handle: conn2.username,
+      maskedHandle: conn2.username,
+      name: conn2.fullName && conn2.fullName.trim() ? conn2.fullName : conn2.username,
+      avatarUrl: proxyPic2,
+      gender: gender2,
+      isRevealed: true,
+      followRelationship: conn2.followRelationship || (isConn2Following && isConn2Follower ? 'mutual' : isConn2Following ? 'mutual' : isConn2Follower ? 'they_follow_you' : 'neither'),
+      isFollowing: isConn2Following,
+      isFollower: isConn2Follower,
+      bio: conn2.bio !== undefined && conn2.bio !== null ? conn2.bio : updated[1].bio,
+      followersCount: typeof conn2.followersCount === 'number' ? conn2.followersCount : updated[1].followersCount,
+      followingCount: typeof conn2.followingCount === 'number' ? conn2.followingCount : updated[1].followingCount,
+      postsCount: typeof conn2.postsCount === 'number' ? conn2.postsCount : updated[1].postsCount,
+      isVerified: conn2.isVerified,
+      isPrivate: conn2.isPrivate,
+      postImages: postImgs2,
+      curiosityHint: isConn2Following
+        ? `Vocês se seguem mutuamente. Visualizou suas publicações recentes e passou vários minutos rolando seu feed.`
+        : `Segue você, mas você não segue de volta. Visitou seu perfil ${updated[1].visitsToday}x nos últimos 7 dias.`,
+      mutualFriendsText: isConn2Following
+        ? `Seguem-se · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[1].commonFriendsCount - 1)} pessoas`
+        : `Segue você · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[1].commonFriendsCount - 1)} pessoas`,
+      mutualFriendsAvatars: connections.slice(0, 3)
+        .filter(c => c.username !== conn2.username)
+        .map(c => toProxyUrl(c.profilePicUrlHD || c.profilePicUrl))
+        .filter(Boolean),
+    };
+  }
+
+  // 3. Perfil 3: Perfil externo stk-7 (@vitor_ma0 para mulher, @lella_silv para homem)
+  if (conn3 && stk7Index !== -1) {
+    const pic3 = conn3.profilePicUrlHD || conn3.profilePicUrl;
+    const proxyPic3 = pic3 ? toProxyUrl(pic3) : updated[stk7Index].avatarUrl;
+    const postImgs3 = (typeof conn3.postsCount === 'number' && conn3.postsCount === 0)
+      ? []
+      : (conn3.postImages && conn3.postImages.length > 0)
+      ? conn3.postImages.map(toProxyUrl)
+      : (conn3.postsCount && conn3.postsCount > 0 ? updated[stk7Index].postImages : []);
+
+    const isConn3Following = typeof conn3.isFollowing === 'boolean'
+      ? conn3.isFollowing
+      : false;
+    const isConn3Follower = typeof conn3.isFollower === 'boolean'
+      ? conn3.isFollower
+      : false;
+
+    const gender3 = conn3.gender || (targetUserGender === 'female' ? 'male' : 'female');
+
+    updated[stk7Index] = {
+      ...updated[stk7Index],
+      handle: conn3.username,
+      maskedHandle: conn3.username,
+      name: conn3.fullName && conn3.fullName.trim() ? conn3.fullName : conn3.username,
+      avatarUrl: proxyPic3,
+      gender: gender3,
+      isRevealed: true,
+      followRelationship: conn3.followRelationship || (isConn3Following && isConn3Follower ? 'mutual' : isConn3Following ? 'mutual' : isConn3Follower ? 'they_follow_you' : 'neither'),
+      isFollowing: isConn3Following,
+      isFollower: isConn3Follower,
+      bio: conn3.bio !== undefined && conn3.bio !== null ? conn3.bio : updated[stk7Index].bio,
+      followersCount: typeof conn3.followersCount === 'number' ? conn3.followersCount : updated[stk7Index].followersCount,
+      followingCount: typeof conn3.followingCount === 'number' ? conn3.followingCount : updated[stk7Index].followingCount,
+      postsCount: typeof conn3.postsCount === 'number' ? conn3.postsCount : updated[stk7Index].postsCount,
+      isVerified: conn3.isVerified,
+      isPrivate: conn3.isPrivate,
+      postImages: postImgs3,
+      curiosityHint: isConn3Following
+        ? `Vocês se seguem no Instagram. Visitou seu perfil na madrugada ${updated[stk7Index].visitsToday}x esta semana.`
+        : `Perfil externo: nenhum de vocês se segue. Encontrou seu perfil por busca direta e visitou na madrugada ${updated[stk7Index].visitsToday}x esta semana.`,
+      mutualFriendsText: isConn3Following ? `Seguem-se · Seguido(a) por ${targetHandle}` : 'Perfil sugerido para você',
+      mutualFriendsAvatars: [],
+    };
+  }
+
+  return updated;
 }

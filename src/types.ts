@@ -56,4 +56,34 @@ export interface StalkerVisitor {
   commonFriendsCount: number;
   savedPhotosCount?: number;
   storyViewsWithoutFollowing?: number;
+  avatarUrl?: string;
+  bio?: string;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
+  mutualFriendsAvatars?: string[];
+  mutualFriendsText?: string;
+  postImages?: string[];
+  followRelationship?: 'they_follow_you' | 'mutual' | 'neither';
+  isFollowing?: boolean;
+  isFollower?: boolean;
+}
+
+export interface RealInstagramConnection {
+  username: string;
+  fullName: string;
+  profilePicUrl?: string;
+  profilePicUrlHD?: string;
+  bio?: string;
+  followersCount?: number;
+  followingCount?: number;
+  postsCount?: number;
+  isVerified: boolean;
+  isPrivate: boolean;
+  type: 'following' | 'follower' | 'related';
+  postImages?: string[];
+  gender?: 'female' | 'male';
+  followRelationship?: 'they_follow_you' | 'mutual' | 'neither';
+  isFollowing?: boolean;
+  isFollower?: boolean;
 }
