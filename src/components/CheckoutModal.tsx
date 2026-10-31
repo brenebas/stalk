@@ -20,6 +20,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [copiedPix, setCopiedPix] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const safeHandle = profile?.handle || 'usuario';
+
   if (!isOpen) return null;
 
   const mockPixCode = '00020126580014br.gov.bcb.pix0136stalkradar-vip-instant-2026520400005303986540519.905802BR5916STALKRADAR APP6009SAO PAULO62070503***6304D1B9';
@@ -67,7 +69,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               Desbloquear StalkRadar VIP
             </h2>
             <p className="text-xs text-neutral-500 mt-1">
-              Acesso total ao dossiê de @{profile.handle}
+              Acesso total ao dossiê de @{safeHandle}
             </p>
           </div>
 

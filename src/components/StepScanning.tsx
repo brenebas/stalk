@@ -149,9 +149,9 @@ export const StepScanning: React.FC<StepScanningProps> = ({
     },
   ];
 
-  // O 1º item leva 20 segundos (20000ms); os 4 últimos (VIP) levam 10 segundos cada (10000ms)
-  const currentItemDurationMs = activeItemIndex === 0 ? 20000 : 10000;
-  const tickIntervalMs = 80;
+  // Duração otimizada e dinâmica: 5s no 1º item + 2.5s nos 4 itens seguintes = 15s total (ritmo perfeito para engajamento)
+  const currentItemDurationMs = activeItemIndex === 0 ? 5000 : 2500;
+  const tickIntervalMs = 60;
   const progressStepPerTick = 100 / (currentItemDurationMs / tickIntervalMs);
 
   useEffect(() => {
@@ -188,19 +188,31 @@ export const StepScanning: React.FC<StepScanningProps> = ({
 
   const isAllCompleted = activeItemIndex >= scanItems.length;
 
-  // Global Progress Bar: proporcional ao tempo total (20s no 1º item + 10s em cada um dos 4 VIP = 60s total)
+  // Auto-avanço de segurança: se o usuário não clicar em 3s após 100%, avança automaticamente
+  useEffect(() => {
+    if (isAllCompleted) {
+      const autoTimer = setTimeout(() => {
+        if (typeof onFinishScan === 'function') {
+          onFinishScan();
+        }
+      }, 3000);
+      return () => clearTimeout(autoTimer);
+    }
+  }, [isAllCompleted, onFinishScan]);
+
+  // Global Progress Bar: proporcional ao tempo total (15s total)
   let elapsedSeconds = 0;
   if (isAllCompleted) {
-    elapsedSeconds = 60;
+    elapsedSeconds = 15;
   } else {
-    const completedSeconds = activeItemIndex === 0 ? 0 : 20 + (activeItemIndex - 1) * 10;
+    const completedSeconds = activeItemIndex === 0 ? 0 : 5 + (activeItemIndex - 1) * 2.5;
     const currentItemSeconds = ((activeItemProgress / 100) * currentItemDurationMs) / 1000;
     elapsedSeconds = completedSeconds + currentItemSeconds;
   }
 
   const globalProgress = isAllCompleted
     ? 100
-    : Math.min(99, Math.floor((elapsedSeconds / 60) * 100));
+    : Math.min(99, Math.floor((elapsedSeconds / 15) * 100));
 
   const currentPhrase = isAllCompleted
     ? 'Varredura 100% concluída com sucesso!'
@@ -458,10 +470,20 @@ export const StepScanning: React.FC<StepScanningProps> = ({
 
         {/* Final CTA Button when 100% */}
         {isAllCompleted && (
-          <div className="mt-4 pt-3 border-t border-neutral-100 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mt-4 pt-3 border-t border-neutral-100 animate-in fade-in zoom-in-95 duration-300 relative z-30">
             <button
-              onClick={onFinishScan}
-              className="w-full py-3.5 px-5 rounded-2xl font-bold text-white text-sm sm:text-base bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 shadow-xl shadow-rose-500/25 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  soundFX.playComplete();
+                } catch {}
+                if (typeof onFinishScan === 'function') {
+                  onFinishScan();
+                }
+              }}
+              className="w-full py-3.5 px-5 rounded-2xl font-bold text-white text-sm sm:text-base bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 shadow-xl shadow-rose-500/25 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer select-none"
             >
               <span>VER RESULTADO</span>
               <ArrowRight className="w-4 h-4" />

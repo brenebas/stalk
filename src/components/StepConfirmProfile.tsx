@@ -74,7 +74,21 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
     return num.toLocaleString('pt-BR');
   };
 
-  const categoryName = profile.category || (profile.isPrivate ? 'Conta Privada' : 'Figura pública');
+  const safeProfile = profile || {
+    handle: 'usuario',
+    name: 'Usuário',
+    bio: '',
+    avatarUrl: '',
+    followersCount: 0,
+    followingCount: 0,
+    postsCount: 0,
+    isVerified: false,
+    isPrivate: false,
+    category: 'Conta Privada',
+    isRealData: false,
+  };
+
+  const categoryName = safeProfile.category || (safeProfile.isPrivate ? 'Conta Privada' : 'Figura pública');
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
@@ -102,13 +116,13 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
               <ArrowLeft className="w-5 h-5 text-neutral-900" />
             </button>
             <div className="flex items-center gap-1.5 min-w-0">
-              {profile.isPrivate && (
+              {safeProfile.isPrivate && (
                 <Lock className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
               )}
               <span className="font-bold text-base sm:text-lg text-neutral-900 truncate tracking-tight">
-                {profile.handle}
+                {safeProfile.handle}
               </span>
-              {profile.isVerified && (
+              {safeProfile.isVerified && (
                 <InstagramVerifiedBadge className="w-4 h-4 ml-0.5" />
               )}
             </div>
@@ -127,10 +141,10 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
             {/* Story ring Avatar */}
             <div className="shrink-0">
               <AvatarIllustration
-                seed={profile.handle}
-                name={profile.name}
-                avatarUrl={profile.avatarUrl}
-                gender={profile.handle.includes('a') || profile.name.toLowerCase().endsWith('a') ? 'female' : 'male'}
+                seed={safeProfile.handle}
+                name={safeProfile.name}
+                avatarUrl={safeProfile.avatarUrl}
+                gender={safeProfile.handle.includes('a') || safeProfile.name.toLowerCase().endsWith('a') ? 'female' : 'male'}
                 size="lg"
                 hasStoryRing={true}
               />
@@ -140,19 +154,19 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
             <div className="flex-1 flex items-center justify-around text-center">
               <div>
                 <span className="block font-bold text-base sm:text-lg text-neutral-900 tabular-nums leading-tight">
-                  {formatInstagramCount(profile.postsCount)}
+                  {formatInstagramCount(safeProfile.postsCount)}
                 </span>
                 <span className="text-xs text-neutral-600 font-normal">posts</span>
               </div>
               <div>
                 <span className="block font-bold text-base sm:text-lg text-neutral-900 tabular-nums leading-tight">
-                  {formatInstagramCount(profile.followersCount)}
+                  {formatInstagramCount(safeProfile.followersCount)}
                 </span>
                 <span className="text-xs text-neutral-600 font-normal">seguidores</span>
               </div>
               <div>
                 <span className="block font-bold text-base sm:text-lg text-neutral-900 tabular-nums leading-tight">
-                  {formatInstagramCount(profile.followingCount)}
+                  {formatInstagramCount(safeProfile.followingCount)}
                 </span>
                 <span className="text-xs text-neutral-600 font-normal">seguindo</span>
               </div>
@@ -162,7 +176,7 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
           {/* Name, Category, Biography & Link */}
           <div className="space-y-1 pt-1 text-left">
             <p className="font-bold text-sm text-neutral-900 leading-tight">
-              {profile.name}
+              {safeProfile.name}
             </p>
 
             {categoryName && (
@@ -171,16 +185,16 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
               </p>
             )}
 
-            {profile.bio && (
+            {safeProfile.bio && (
               <p className="text-xs sm:text-sm text-neutral-800 whitespace-pre-line leading-snug pt-0.5">
-                {profile.bio}
+                {safeProfile.bio}
               </p>
             )}
 
-            {profile.externalUrl && (
+            {safeProfile.externalUrl && (
               <div className="pt-1 flex items-center gap-1.5 text-xs text-[#00376b] font-medium hover:underline cursor-pointer truncate">
                 <Link2 className="w-3.5 h-3.5 shrink-0 text-[#00376b]" />
-                <span className="truncate">{profile.externalUrl.replace(/^https?:\/\//, '')}</span>
+                <span className="truncate">{safeProfile.externalUrl.replace(/^https?:\/\//, '')}</span>
               </div>
             )}
           </div>

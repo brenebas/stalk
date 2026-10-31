@@ -46,6 +46,11 @@ test('generateStalkersList returns 2 revealed and 16 blurred by default, or all 
   assert.equal(unlockedList.length, 18);
   const revealedUnlocked = unlockedList.filter(s => s.isRevealed);
   assert.equal(revealedUnlocked.length, 18);
+
+  // Large follower profiles (e.g. 10,000 visitors detected): must cap suspect cards to max 24
+  const hugeList = generateStalkersList(false, 10000);
+  assert.ok(hugeList.length <= 24);
+  assert.equal(hugeList.length, 24);
 });
 
 test('fetchInstagramProfileLive returns valid InstagramProfile for handle', async () => {

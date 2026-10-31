@@ -9,6 +9,7 @@ import { StepScanning } from './components/StepScanning';
 import { StepResults } from './components/StepResults';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Footer } from './components/Footer';
+import { soundFX } from './utils/audio';
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<FunnelStep>('input');
@@ -101,8 +102,18 @@ export default function App() {
   };
 
   const handleFinishScan = () => {
+    try {
+      soundFX.playComplete();
+    } catch {}
+
+    if (!stalkers || stalkers.length === 0) {
+      setStalkers(generateStalkersList(false, metrics?.visitorsToday || 24));
+    }
+
     setCurrentStep('results');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {}
   };
 
   const handleReset = () => {

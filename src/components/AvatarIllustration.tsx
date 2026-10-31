@@ -29,7 +29,8 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
     xl: 'w-24 h-24 text-xl',
   };
 
-  const initial = (name ? name.charAt(0) : seed.charAt(0)).toUpperCase();
+  const safeSeed = seed || name || 'user';
+  const initial = (name ? name.charAt(0) : safeSeed.charAt(0)).toUpperCase();
 
   // Pick deterministic palette based on seed
   const palettes = [
@@ -41,7 +42,7 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
   ];
 
   let sum = 0;
-  for (let i = 0; i < seed.length; i++) sum += seed.charCodeAt(i);
+  for (let i = 0; i < safeSeed.length; i++) sum += safeSeed.charCodeAt(i);
   const palette = palettes[sum % palettes.length];
 
   // If avatarUrl is from Instagram CDN, route through our server proxy to avoid 403 Forbidden

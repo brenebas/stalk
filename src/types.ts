@@ -50,7 +50,9 @@ export interface StalkerVisitor {
   frequency: 'Alta' | 'Média' | 'Muito Alta';
   relationshipCategory: 'Ex-Contato' | 'Crush Secreto' | 'Stalker Noturno' | 'Ex-Seguidor' | 'Amigo Próximo' | 'Anônimo';
   curiosityHint: string;
-  suspicionScore: number; // 0 - 100
+  suspicionScore?: number;
+  isVerified?: boolean;
+  isPrivate?: boolean;
   commonFriendsCount: number;
   savedPhotosCount?: number;
   storyViewsWithoutFollowing?: number;
