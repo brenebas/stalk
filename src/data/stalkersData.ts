@@ -293,10 +293,19 @@ export function generateStalkersList(
       suspicionScore: 97,
       commonFriendsCount: 0,
       savedPhotosCount: 1,
-      postsCount: 0,
+      postsCount: 3,
       followersCount: isFemaleUser ? 141 : 382,
       followingCount: isFemaleUser ? 133 : 290,
       bio: isFemaleUser ? '⚡ Engenharia & Lifestyle 📍 RJ' : '✨ Vivendo o agora | Design & Moda 🤍',
+      postImages: isFemaleUser ? [
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80'
+      ] : [
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
+      ],
       mutualFriendsAvatars: [],
       mutualFriendsText: 'Perfil sugerido para você'
     },
@@ -843,11 +852,13 @@ export function applyRealConnectionsToStalkers(
   if (conn1 && updated[0]) {
     const pic1 = conn1.profilePicUrlHD || conn1.profilePicUrl;
     const proxyPic1 = pic1 ? toProxyUrl(pic1) : updated[0].avatarUrl;
-    const postImgs1 = (typeof conn1.postsCount === 'number' && conn1.postsCount === 0)
-      ? []
-      : (conn1.postImages && conn1.postImages.length > 0)
+    const postImgs1 = (conn1.postImages && conn1.postImages.length > 0)
       ? conn1.postImages.map(toProxyUrl)
-      : (conn1.postsCount && conn1.postsCount > 0 ? updated[0].postImages : []);
+      : (updated[0].postImages && updated[0].postImages.length > 0 ? updated[0].postImages : [
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
+        ]);
 
     const isConn1Following = typeof conn1.isFollowing === 'boolean'
       ? conn1.isFollowing
@@ -865,7 +876,7 @@ export function applyRealConnectionsToStalkers(
       handle: conn1.username,
       maskedHandle: conn1.username,
       name: conn1.fullName && conn1.fullName.trim() ? conn1.fullName : conn1.username,
-      avatarUrl: proxyPic1,
+      avatarUrl: proxyPic1 || updated[0].avatarUrl,
       gender: gender1,
       isRevealed: true,
       followRelationship: conn1.followRelationship || (isConn1Following && isConn1Follower ? 'mutual' : isConn1Following ? 'mutual' : isConn1Follower ? 'they_follow_you' : 'neither'),
@@ -873,10 +884,10 @@ export function applyRealConnectionsToStalkers(
       isFollower: isConn1Follower,
       visitsToday: visits1,
       frequency: 'Média',
-      bio: conn1.bio !== undefined && conn1.bio !== null ? conn1.bio : updated[0].bio,
-      followersCount: typeof conn1.followersCount === 'number' ? conn1.followersCount : updated[0].followersCount,
-      followingCount: typeof conn1.followingCount === 'number' ? conn1.followingCount : updated[0].followingCount,
-      postsCount: typeof conn1.postsCount === 'number' ? conn1.postsCount : updated[0].postsCount,
+      bio: conn1.bio !== undefined && conn1.bio !== null && conn1.bio.trim() ? conn1.bio : updated[0].bio,
+      followersCount: typeof conn1.followersCount === 'number' && conn1.followersCount > 0 ? conn1.followersCount : updated[0].followersCount,
+      followingCount: typeof conn1.followingCount === 'number' && conn1.followingCount > 0 ? conn1.followingCount : updated[0].followingCount,
+      postsCount: Math.max(3, typeof conn1.postsCount === 'number' && conn1.postsCount > 0 ? conn1.postsCount : updated[0].postsCount),
       isVerified: conn1.isVerified,
       isPrivate: conn1.isPrivate,
       postImages: postImgs1,
@@ -894,11 +905,13 @@ export function applyRealConnectionsToStalkers(
   if (conn2 && updated[1]) {
     const pic2 = conn2.profilePicUrlHD || conn2.profilePicUrl;
     const proxyPic2 = pic2 ? toProxyUrl(pic2) : updated[1].avatarUrl;
-    const postImgs2 = (typeof conn2.postsCount === 'number' && conn2.postsCount === 0)
-      ? []
-      : (conn2.postImages && conn2.postImages.length > 0)
+    const postImgs2 = (conn2.postImages && conn2.postImages.length > 0)
       ? conn2.postImages.map(toProxyUrl)
-      : (conn2.postsCount && conn2.postsCount > 0 ? updated[1].postImages : []);
+      : (updated[1].postImages && updated[1].postImages.length > 0 ? updated[1].postImages : [
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+        ]);
 
     const isConn2Following = typeof conn2.isFollowing === 'boolean'
       ? conn2.isFollowing
@@ -915,7 +928,7 @@ export function applyRealConnectionsToStalkers(
       handle: conn2.username,
       maskedHandle: conn2.username,
       name: conn2.fullName && conn2.fullName.trim() ? conn2.fullName : conn2.username,
-      avatarUrl: proxyPic2,
+      avatarUrl: proxyPic2 || updated[1].avatarUrl,
       gender: gender2,
       isRevealed: true,
       followRelationship: conn2.followRelationship || (isConn2Following && isConn2Follower ? 'mutual' : isConn2Following ? 'mutual' : isConn2Follower ? 'they_follow_you' : 'neither'),
@@ -923,10 +936,10 @@ export function applyRealConnectionsToStalkers(
       isFollower: isConn2Follower,
       visitsToday: visits2,
       frequency: 'Média',
-      bio: conn2.bio !== undefined && conn2.bio !== null ? conn2.bio : updated[1].bio,
-      followersCount: typeof conn2.followersCount === 'number' ? conn2.followersCount : updated[1].followersCount,
-      followingCount: typeof conn2.followingCount === 'number' ? conn2.followingCount : updated[1].followingCount,
-      postsCount: typeof conn2.postsCount === 'number' ? conn2.postsCount : updated[1].postsCount,
+      bio: conn2.bio !== undefined && conn2.bio !== null && conn2.bio.trim() ? conn2.bio : updated[1].bio,
+      followersCount: typeof conn2.followersCount === 'number' && conn2.followersCount > 0 ? conn2.followersCount : updated[1].followersCount,
+      followingCount: typeof conn2.followingCount === 'number' && conn2.followingCount > 0 ? conn2.followingCount : updated[1].followingCount,
+      postsCount: Math.max(3, typeof conn2.postsCount === 'number' && conn2.postsCount > 0 ? conn2.postsCount : updated[1].postsCount),
       isVerified: conn2.isVerified,
       isPrivate: conn2.isPrivate,
       postImages: postImgs2,
@@ -945,11 +958,13 @@ export function applyRealConnectionsToStalkers(
   if (conn3 && stk7Index !== -1) {
     const pic3 = conn3.profilePicUrlHD || conn3.profilePicUrl;
     const proxyPic3 = pic3 ? toProxyUrl(pic3) : updated[stk7Index].avatarUrl;
-    const postImgs3 = (typeof conn3.postsCount === 'number' && conn3.postsCount === 0)
-      ? []
-      : (conn3.postImages && conn3.postImages.length > 0)
+    const postImgs3 = (conn3.postImages && conn3.postImages.length > 0)
       ? conn3.postImages.map(toProxyUrl)
-      : (conn3.postsCount && conn3.postsCount > 0 ? updated[stk7Index].postImages : []);
+      : (updated[stk7Index].postImages && updated[stk7Index].postImages.length > 0 ? updated[stk7Index].postImages : [
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80'
+        ]);
 
     const isConn3Following = typeof conn3.isFollowing === 'boolean'
       ? conn3.isFollowing
@@ -966,7 +981,7 @@ export function applyRealConnectionsToStalkers(
       handle: conn3.username,
       maskedHandle: conn3.username,
       name: conn3.fullName && conn3.fullName.trim() ? conn3.fullName : conn3.username,
-      avatarUrl: proxyPic3,
+      avatarUrl: proxyPic3 || updated[stk7Index].avatarUrl,
       gender: gender3,
       isRevealed: true,
       followRelationship: conn3.followRelationship || (isConn3Following && isConn3Follower ? 'mutual' : isConn3Following ? 'mutual' : isConn3Follower ? 'they_follow_you' : 'neither'),
@@ -974,10 +989,10 @@ export function applyRealConnectionsToStalkers(
       isFollower: isConn3Follower,
       visitsToday: visits3,
       frequency: 'Média',
-      bio: conn3.bio !== undefined && conn3.bio !== null ? conn3.bio : updated[stk7Index].bio,
-      followersCount: typeof conn3.followersCount === 'number' ? conn3.followersCount : updated[stk7Index].followersCount,
-      followingCount: typeof conn3.followingCount === 'number' ? conn3.followingCount : updated[stk7Index].followingCount,
-      postsCount: typeof conn3.postsCount === 'number' ? conn3.postsCount : updated[stk7Index].postsCount,
+      bio: conn3.bio !== undefined && conn3.bio !== null && conn3.bio.trim() ? conn3.bio : updated[stk7Index].bio,
+      followersCount: typeof conn3.followersCount === 'number' && conn3.followersCount > 0 ? conn3.followersCount : updated[stk7Index].followersCount,
+      followingCount: typeof conn3.followingCount === 'number' && conn3.followingCount > 0 ? conn3.followingCount : updated[stk7Index].followingCount,
+      postsCount: Math.max(3, typeof conn3.postsCount === 'number' && conn3.postsCount > 0 ? conn3.postsCount : updated[stk7Index].postsCount),
       isVerified: conn3.isVerified,
       isPrivate: conn3.isPrivate,
       postImages: postImgs3,

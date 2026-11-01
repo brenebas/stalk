@@ -23,13 +23,7 @@ export async function fetchInstagramProfileLive(rawHandle: string): Promise<Inst
     throw new Error('Nome de usuário inválido');
   }
 
-  // 1. Check presets first
-  const preset = PRESET_ACCOUNTS.find(p => p.handle.toLowerCase() === cleanHandle);
-  if (preset) {
-    return { ...preset, isRealData: true };
-  }
-
-  // 2. Instagram internal web profile API
+  // 1. Instagram internal web profile API
   try {
     const webApiUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(cleanHandle)}`;
     const response = await fetch(webApiUrl, {

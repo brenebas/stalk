@@ -74,12 +74,6 @@ export function sanitizeAndValidateUsername(rawUsername: string): string {
 export async function fetchInstagramProfileApify(rawUsername: string, forceRefresh = false): Promise<InstagramProfile> {
   const username = sanitizeAndValidateUsername(rawUsername);
 
-  // 0. Immediate preset account return (bypasses Apify quota completely)
-  const preset = PRESET_ACCOUNTS.find(p => p.handle.toLowerCase() === username);
-  if (preset) {
-    return preset;
-  }
-
   // 1. Check in-memory cache (unless forceRefresh is requested)
   if (!forceRefresh) {
     const cached = profileCache.get(username);
@@ -189,12 +183,10 @@ export async function fetchInstagramProfileApify(rawUsername: string, forceRefre
     ) || dataset[0];
 
     // Check if the actor flagged the profile as not found or error
-    if (item.error === 'not_found' || item.errorDescription === 'Profile does not exist') {
-      throw new ApifyError('Esse perfil não existe, por favor coloque um perfil válido', 404, 'NOT_FOUND');
-    }
-
-    if (!item.username && !item.fullName && !item.id) {
-      throw new ApifyError('Esse perfil não existe, por favor coloque um perfil válido', 404, 'NOT_FOUND');
+    if (item.error === 'not_found' || item.errorDescription === 'Profile does not exist' || (!item.username && !item.fullName && !item.id)) {
+      const fallback = await fetchInstagramProfileLive(username);
+      profileCache.set(username, { profile: fallback, timestamp: Date.now() });
+      return fallback;
     }
 
     // Map Apify item fields to the exact InstagramProfile interface
