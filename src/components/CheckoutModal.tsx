@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check, QrCode, CreditCard, Sparkles, Copy, ArrowRight, Shield } from 'lucide-react';
 import { InstagramProfile } from '../types';
 import { soundFX } from '../utils/audio';
+import { detectGender } from '../utils/genderDetector';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const safeHandle = profile?.handle || 'usuario';
+  const isFemaleUser = detectGender(profile?.name, profile?.bio, profile?.handle) === 'female';
 
   if (!isOpen) return null;
 
@@ -69,7 +71,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               Desbloquear StalkRadar VIP
             </h2>
             <p className="text-xs text-neutral-500 mt-1">
-              Acesso total ao dossiê de @{safeHandle}
+              {isFemaleUser
+                ? `Acesso total à identidade de quem vigia @${safeHandle}`
+                : `Acesso total aos perfis de mulheres que visitam @${safeHandle}`}
             </p>
           </div>
 
@@ -89,16 +93,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="space-y-2 text-xs text-neutral-700">
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Desbloqueia os 16 perfis ocultos com fotos e @s</span>
+                <span>Desbloqueia os 21 perfis ocultos com fotos nítidas e @s reais</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Horários exatos de visualização e stalkers de madrugada</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Libera módulos: Quem deu unfollow e Salvamentos</span>
-              </div>
+              {isFemaleUser ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Descubra quem encaminhou seus stories no Direct e tirou prints</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Identifique quem te deu unfollow e quem assiste stories em anônimo</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Descubra quem são as mulheres que visitaram seu perfil de madrugada</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Veja quem deu zoom, salvou fotos suas e abriu seu Direct</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

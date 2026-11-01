@@ -92,7 +92,6 @@ export default function App() {
         setSearchError('Esse perfil não existe, por favor coloque um perfil válido');
       } else {
         // Fallback resiliente caso o servidor retorne status de indisponibilidade
-        const { getOrCreateInstagramProfile } = await import('./data/mockProfiles');
         const fallbackData = getOrCreateInstagramProfile(clean);
         const fallbackMetrics = generateScanMetrics(
           fallbackData.handle,
@@ -109,18 +108,17 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
-      console.warn('Erro de conexão ao consultar /api/instagram/profile, ativando fallback resiliente:', err);
       try {
-        const { getOrCreateInstagramProfile } = await import('./data/mockProfiles');
         const fallbackData = getOrCreateInstagramProfile(clean);
         const fallbackMetrics = generateScanMetrics(
           fallbackData.handle,
           fallbackData.followersCount,
           fallbackData.isPrivate
         );
+        const fallbackGender = detectGender(fallbackData.name, fallbackData.bio, fallbackData.handle);
         setCurrentProfile(fallbackData);
         setMetrics(fallbackMetrics);
-        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday));
+        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday, fallbackGender));
         setIsUnlocked(false);
         setSearchError('');
         setCurrentStep('confirm_profile');

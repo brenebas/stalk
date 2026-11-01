@@ -74,15 +74,16 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
               src={proxyAvatarUrl}
               alt={name}
               onError={() => setImgFailed(true)}
-              className="w-full h-full object-cover rounded-full"
+              className={`w-full h-full object-cover rounded-full transition-all duration-300 ${
+                isBlurred ? 'filter blur-[1.5px] scale-105' : ''
+              }`}
               loading="lazy"
-              crossOrigin="anonymous"
             />
           ) : (
             /* Stylized vector character silhouette */
             <svg
               viewBox="0 0 100 100"
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${isBlurred ? 'filter blur-[1.5px]' : ''}`}
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -152,13 +153,6 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
                 {initial}
               </text>
             </svg>
-          )}
-
-          {/* Intentionally strong blur overlay if stalker is hidden */}
-          {isBlurred && (
-            <div className="absolute inset-0 backdrop-blur-md bg-white/70 flex flex-col items-center justify-center z-10 transition-all duration-300">
-              <span className="text-neutral-900 text-lg font-bold">🔒</span>
-            </div>
           )}
         </div>
       </div>

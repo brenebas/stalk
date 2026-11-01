@@ -36,16 +36,16 @@ test('generateScanMetrics returns plausible metrics and scales intelligently wit
   assert.ok(metricsHuge.savedPostsCount >= 1000);
 });
 
-test('generateStalkersList returns 3 revealed and 15 blurred by default, or all revealed when unlocked', () => {
+test('generateStalkersList returns 3 revealed and 21 blurred by default, or all revealed when unlocked', () => {
   const lockedList = generateStalkersList(false);
-  assert.equal(lockedList.length, 18);
+  assert.equal(lockedList.length, 24);
   const revealedLocked = lockedList.filter(s => s.isRevealed);
   assert.equal(revealedLocked.length, 3);
 
   const unlockedList = generateStalkersList(true);
-  assert.equal(unlockedList.length, 18);
+  assert.equal(unlockedList.length, 24);
   const revealedUnlocked = unlockedList.filter(s => s.isRevealed);
-  assert.equal(revealedUnlocked.length, 18);
+  assert.equal(revealedUnlocked.length, 24);
 
   // Large follower profiles (e.g. 10,000 visitors detected): must cap suspect cards to max 24
   const hugeList = generateStalkersList(false, 10000);
@@ -122,3 +122,88 @@ test('detectGender correctly identifies gender based on names, bios, and pronoun
   assert.equal(detectGender('Lucas Mendes', 'Engenharia & Lifestyle'), 'male');
   assert.equal(detectGender('Neymar Jr', 'Atleta'), 'male');
 });
+
+test('open profiles have max 2 visits and private profiles have realistic visits unless man stalking woman', () => {
+  const listFemale = generateStalkersList(false, undefined, 'female');
+  const freeProfiles = listFemale.filter(s => s.isRevealed);
+  const lockedProfiles = listFemale.filter(s => !s.isRevealed);
+
+  assert.equal(freeProfiles.length, 3);
+  for (const s of freeProfiles) {
+    assert.ok(s.visitsToday <= 2, `Free profile ${s.handle} must have max 2 visits, got ${s.visitsToday}`);
+    // Behavior text must not contain follow relationship phrases
+    assert.ok(!s.curiosityHint.toLowerCase().includes('segue você'), 'Must not say segue você');
+    assert.ok(!s.curiosityHint.toLowerCase().includes('você segue'), 'Must not say você segue');
+    assert.ok(!s.curiosityHint.toLowerCase().includes('vocês se seguem'), 'Must not say vocês se seguem');
+  }
+
+  // When female user is researching:
+  // Male stalkers have elevated visits (14-20)
+  // Female stalkers have realistic visits (3-6)
+  const maleStalkers = lockedProfiles.filter(s => s.gender === 'male');
+  const femaleStalkers = lockedProfiles.filter(s => s.gender === 'female');
+  for (const s of maleStalkers) {
+    assert.ok(s.visitsToday >= 10, `Male stalker on female user should have elevated visits, got ${s.visitsToday}`);
+  }
+  for (const s of femaleStalkers) {
+    assert.ok(s.visitsToday <= 6, `Female stalker on female user must not exaggerate visits, got ${s.visitsToday}`);
+  }
+
+  // When male user is researching: ALL stalkers have realistic non-exaggerated visits (3-6)
+  const listMale = generateStalkersList(false, undefined, 'male');
+  const lockedMaleUser = listMale.filter(s => !s.isRevealed);
+  for (const s of lockedMaleUser) {
+    assert.ok(s.visitsToday <= 6, `For male user, private visits must not be exaggerated, got ${s.visitsToday}`);
+  }
+
+  // Verify reduced mutual friends count and existence of 0 mutual friends
+  const zeroMutual = listFemale.filter(s => s.commonFriendsCount === 0);
+  assert.ok(zeroMutual.length > 0, 'Must have some profiles with 0 mutual friends');
+  for (const s of listFemale) {
+    assert.ok(s.commonFriendsCount <= 3, `Common friends must be reduced (max 3), got ${s.commonFriendsCount}`);
+  }
+});
+
+test('21 blocked profiles are configured with the user provided images and mixed/non-sequential order', () => {
+  const list = generateStalkersList(false, undefined, 'female');
+  const lockedProfiles = list.filter(s => !s.isRevealed);
+
+  assert.equal(lockedProfiles.length, 21, 'Must have exactly 21 locked profiles');
+
+  const maleLocked = lockedProfiles.filter(s => s.gender === 'male');
+  const femaleLocked = lockedProfiles.filter(s => s.gender === 'female');
+
+  assert.equal(maleLocked.length, 10, 'Must have 10 male locked profiles');
+  assert.equal(femaleLocked.length, 11, 'Must have 11 female locked profiles');
+
+  // Verify all have avatarUrl from i.ibb.co
+  for (const s of lockedProfiles) {
+    assert.ok(s.avatarUrl, `Profile ${s.id} must have avatarUrl`);
+    assert.ok(s.avatarUrl.startsWith('https://i.ibb.co/'), `Profile ${s.id} avatarUrl must be from i.ibb.co`);
+  }
+
+  // Verify male and female genders are interleaved (not all male first then all female)
+  const firstFourGenders = lockedProfiles.slice(0, 4).map(s => s.gender);
+  assert.ok(firstFourGenders.includes('male') && firstFourGenders.includes('female'), 'Genders must be interleaved, not grouped in block order');
+});
+
+test('psychological engineering adapts triggers and priority based on gender', () => {
+  // 1. Female user: top locked profile is female with direct story forwarding trigger
+  const femaleUserList = generateStalkersList(false, undefined, 'female');
+  const femaleLocked = femaleUserList.filter(s => !s.isRevealed);
+  assert.equal(femaleLocked[0].gender, 'female');
+  assert.equal(femaleLocked[0].relationshipCategory, 'Encaminhou no Direct');
+  assert.ok(femaleLocked[0].curiosityHint.includes('Direct'));
+
+  // 2. Male user: all 11 female locked profiles come first, with midnight and saved photo triggers
+  const maleUserList = generateStalkersList(false, undefined, 'male');
+  const maleLocked = maleUserList.filter(s => !s.isRevealed);
+  // First 11 locked profiles must all be female
+  const top11Locked = maleLocked.slice(0, 11);
+  assert.equal(top11Locked.every(s => s.gender === 'female'), true, 'Top 11 locked profiles for men must be women');
+  assert.equal(top11Locked[0].relationshipCategory, 'Stalker da Madrugada');
+  assert.ok(top11Locked[0].curiosityHint.includes('madrugada'));
+  assert.equal(top11Locked[1].relationshipCategory, 'Salvou sua Foto');
+});
+
+

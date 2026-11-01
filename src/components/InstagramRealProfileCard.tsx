@@ -388,11 +388,6 @@ export const InstagramRealProfileCard: React.FC<InstagramRealProfileCardProps> =
           <span>
             Visitas (7 dias): <strong className="text-neutral-900 font-semibold">{stalker.visitsToday}x</strong>
           </span>
-          <span>·</span>
-          <span>
-            Frequência: <strong className="text-neutral-900 font-semibold">{stalker.frequency}</strong>
-          </span>
-          <span>·</span>
           <span className="text-emerald-700 font-medium flex items-center gap-1">
             <Check className="w-3 h-3 text-emerald-600" /> Liberado
           </span>

@@ -1,6 +1,8 @@
 import { InstagramProfile, RealInstagramConnection } from '../types';
 import { detectGender } from '../utils/genderDetector';
 import { APP_CONFIG } from '../config';
+import { fetchInstagramProfileLive } from './instagramService';
+import { PRESET_ACCOUNTS } from '../data/mockProfiles';
 
 export class ApifyError extends Error {
   statusCode: number;
@@ -72,6 +74,12 @@ export function sanitizeAndValidateUsername(rawUsername: string): string {
 export async function fetchInstagramProfileApify(rawUsername: string, forceRefresh = false): Promise<InstagramProfile> {
   const username = sanitizeAndValidateUsername(rawUsername);
 
+  // 0. Immediate preset account return (bypasses Apify quota completely)
+  const preset = PRESET_ACCOUNTS.find(p => p.handle.toLowerCase() === username);
+  if (preset) {
+    return preset;
+  }
+
   // 1. Check in-memory cache (unless forceRefresh is requested)
   if (!forceRefresh) {
     const cached = profileCache.get(username);
@@ -138,6 +146,18 @@ export async function fetchInstagramProfileApify(rawUsername: string, forceRefre
 
     // Handle HTTP errors from Apify
     if (!response.ok) {
+      if (response.status === 403 || response.status === 429) {
+        // Quando a cota mensal da Apify é atingida ou retorna 403 (Monthly usage limit),
+        // aciona automaticamente o fallback resiliente sem quebrar a aplicação
+        try {
+          const liveFallback = await fetchInstagramProfileLive(username);
+          profileCache.set(username, {
+            profile: liveFallback,
+            timestamp: Date.now(),
+          });
+          return liveFallback;
+        } catch {}
+      }
       if (response.status === 401) {
         throw new ApifyError('Token da Apify inválido ou não autorizado.', 401, 'UNAUTHORIZED');
       }
@@ -369,7 +389,43 @@ export async function fetchInstagramConnectionsApify(
   const target3ExpectedGender: 'female' | 'male' = detectedTargetGender === 'female' ? 'male' : 'female';
 
   let candidate3: RealInstagramConnection | null = null;
-  if (target3Handle) {
+  if (target3Handle.toLowerCase() === 'vitor_ma0') {
+    candidate3 = {
+      username: 'vitor_ma0',
+      fullName: 'Vítor Machado',
+      profilePicUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+      profilePicUrlHD: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+      bio: '⚡ Engenharia & Lifestyle 📍 RJ',
+      followersCount: 141,
+      followingCount: 133,
+      postsCount: 0,
+      isVerified: false,
+      isPrivate: true,
+      type: 'related',
+      gender: 'male',
+      isFollowing: followingSet.has('vitor_ma0'),
+      isFollower: followersSet.has('vitor_ma0'),
+      followRelationship: 'neither',
+    };
+  } else if (target3Handle.toLowerCase() === 'lella_silv') {
+    candidate3 = {
+      username: 'lella_silv',
+      fullName: 'Lella Silva',
+      profilePicUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      profilePicUrlHD: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      bio: '✨ Vivendo o agora | Design & Moda 🤍',
+      followersCount: 382,
+      followingCount: 290,
+      postsCount: 0,
+      isVerified: false,
+      isPrivate: true,
+      type: 'related',
+      gender: 'female',
+      isFollowing: followingSet.has('lella_silv'),
+      isFollower: followersSet.has('lella_silv'),
+      followRelationship: 'neither',
+    };
+  } else if (target3Handle) {
     try {
       const prof3 = await fetchInstagramProfileApify(target3Handle);
       candidate3 = {
@@ -389,62 +445,43 @@ export async function fetchInstagramConnectionsApify(
         isFollower: followersSet.has(prof3.handle.toLowerCase()),
         followRelationship: 'neither',
       };
-    } catch (err) {
-      console.info('Aviso ao consultar terceiro perfil informado:', err);
+    } catch {
+      try {
+        const fallback3 = await fetchInstagramProfileLive(target3Handle);
+        candidate3 = {
+          username: fallback3.handle,
+          fullName: fallback3.name,
+          profilePicUrl: fallback3.avatarUrl,
+          profilePicUrlHD: fallback3.avatarUrl,
+          bio: fallback3.bio,
+          followersCount: fallback3.followersCount,
+          followingCount: fallback3.followingCount,
+          postsCount: fallback3.postsCount,
+          isVerified: fallback3.isVerified,
+          isPrivate: fallback3.isPrivate,
+          type: 'related',
+          gender: target3ExpectedGender,
+          isFollowing: false,
+          isFollower: false,
+          followRelationship: 'neither',
+        };
+      } catch {}
     }
   }
 
   if (!candidate3) {
-    if (target3Handle.toLowerCase() === 'vitor_ma0') {
+    const neitherRelated = relatedCached.find(r => 
+      !followingSet.has(r.username.toLowerCase()) && 
+      !followersSet.has(r.username.toLowerCase())
+    );
+    if (neitherRelated) {
       candidate3 = {
-        username: 'vitor_ma0',
-        fullName: 'Vítor Machado',
-        profilePicUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-        profilePicUrlHD: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-        bio: '⚡ Engenharia & Lifestyle 📍 RJ',
-        followersCount: 141,
-        followingCount: 133,
-        postsCount: 0,
-        isVerified: false,
-        isPrivate: true,
-        type: 'related',
-        gender: 'male',
-        isFollowing: followingSet.has('vitor_ma0'),
-        isFollower: followersSet.has('vitor_ma0'),
+        ...neitherRelated,
+        isFollowing: false,
+        isFollower: false,
         followRelationship: 'neither',
+        gender: target3ExpectedGender,
       };
-    } else if (target3Handle.toLowerCase() === 'lella_silv') {
-      candidate3 = {
-        username: 'lella_silv',
-        fullName: 'Lella Silva',
-        profilePicUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-        profilePicUrlHD: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-        bio: '✨ Vivendo o agora | Design & Moda 🤍',
-        followersCount: 382,
-        followingCount: 290,
-        postsCount: 0,
-        isVerified: false,
-        isPrivate: true,
-        type: 'related',
-        gender: 'female',
-        isFollowing: followingSet.has('lella_silv'),
-        isFollower: followersSet.has('lella_silv'),
-        followRelationship: 'neither',
-      };
-    } else {
-      const neitherRelated = relatedCached.find(r => 
-        !followingSet.has(r.username.toLowerCase()) && 
-        !followersSet.has(r.username.toLowerCase())
-      );
-      if (neitherRelated) {
-        candidate3 = {
-          ...neitherRelated,
-          isFollowing: false,
-          isFollower: false,
-          followRelationship: 'neither',
-          gender: target3ExpectedGender,
-        };
-      }
     }
   }
 

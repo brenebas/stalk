@@ -83,6 +83,18 @@ export function generateScanMetrics(
   };
 }
 
+function getPrivateVisits(
+  stalkerGender: 'female' | 'male',
+  isFemaleUser: boolean,
+  elevatedCount: number,
+  realisticCount: number
+): number {
+  if (isFemaleUser && stalkerGender === 'male') {
+    return elevatedCount;
+  }
+  return realisticCount;
+}
+
 export function generateStalkersList(
   isUnlocked: boolean = false,
   targetCount?: number,
@@ -107,14 +119,14 @@ export function generateStalkersList(
       followRelationship: 'they_follow_you',
       isFollowing: false,
       isFollower: true,
-      visitsToday: 6,
+      visitsToday: 2,
       lastVisitAgo: 'há 18 min',
-      frequency: 'Muito Alta',
+      frequency: 'Média',
       relationshipCategory: 'Amigo Próximo',
-      curiosityHint: 'Segue você, mas você não segue de volta. Visitou seu perfil 6x nos últimos 7 dias e abriu seus últimos 2 stories 3 vezes seguidas.',
+      curiosityHint: 'Visualizou seu último post e abriu seu último Story 2 vezes em menos de 10 minutos.',
       suspicionScore: 94,
-      commonFriendsCount: 14,
-      storyViewsWithoutFollowing: 3,
+      commonFriendsCount: 3,
+      storyViewsWithoutFollowing: 2,
       postsCount: 3,
       followersCount: 428,
       followingCount: 312,
@@ -124,7 +136,7 @@ export function generateStalkersList(
         'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=80&q=80',
         'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=80&q=80'
       ],
-      mutualFriendsText: 'Segue você · Seguido(a) por gabriel.lima, beatriz_santos e outras 12 pessoas',
+      mutualFriendsText: 'Segue você · Seguido(a) por gabriel.lima e outras 3 pessoas',
       postImages: [
         'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
         'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
@@ -145,13 +157,13 @@ export function generateStalkersList(
       followRelationship: 'mutual',
       isFollowing: true,
       isFollower: true,
-      visitsToday: 5,
+      visitsToday: 2,
       lastVisitAgo: 'há 32 min',
-      frequency: 'Alta',
+      frequency: 'Média',
       relationshipCategory: 'Amigo Próximo',
-      curiosityHint: 'Vocês se seguem mutuamente. Visualizou suas últimas fotos de perfil e passou 3min 40s rolando seu feed esta semana.',
+      curiosityHint: 'Entrou no seu perfil através do último Reels que você curtiu, e ficou alguns segundos.',
       suspicionScore: 91,
-      commonFriendsCount: 8,
+      commonFriendsCount: 2,
       savedPhotosCount: 1,
       postsCount: 2,
       followersCount: 310,
@@ -161,88 +173,98 @@ export function generateStalkersList(
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
         'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80'
       ],
-      mutualFriendsText: 'Seguem-se · Seguido(a) por camila_azevedo, lucas.moraes e outras 6 pessoas',
+      mutualFriendsText: 'Seguem-se · Seguido(a) por camila_azevedo e outras 2 pessoas',
       postImages: [
         'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
         'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
       ]
     },
-    // Os perfis a seguir ficam bloqueados por padrão entre os gratuitos
+    // Os perfis a seguir ficam bloqueados por padrão entre os gratuitos (perfis privados)
     {
       id: 'stk-3',
+      name: isUnlocked ? 'Camila Vasconcelos' : 'C***** V***********',
+      handle: isUnlocked ? 'camila_vasc' : 'camila_****',
+      maskedHandle: 'camila_****',
+      avatarSeed: 'Camila',
+      avatarColor: 'from-purple-500 to-pink-600',
+      avatarUrl: 'https://i.ibb.co/r2vbyvjM/958de002a72d1636dac421e9841e6669.jpg',
+      gender: 'female',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 18, 5),
+      lastVisitAgo: isFemaleUser ? 'há 43 min' : 'há 35 min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Encaminhou no Direct' : 'Stalker da Madrugada',
+      curiosityHint: isFemaleUser
+        ? 'Encaminhou seu último Story no Direct para outra pessoa há 43 minutos.'
+        : 'Visitou seu perfil na madrugada para rever seu último post.',
+      suspicionScore: 98,
+      commonFriendsCount: 0
+    },
+    {
+      id: 'stk-4',
       name: isUnlocked ? 'Guilherme Silva' : 'G********* S****',
       handle: isUnlocked ? 'gui_silva.oficial' : 'g****_silva',
       maskedHandle: 'g****_silva',
       avatarSeed: 'Guilherme',
       avatarColor: 'from-indigo-500 to-purple-600',
+      avatarUrl: 'https://i.ibb.co/LXtjQHr9/eb287f42f0d2279a8db70f63065ea69b.jpg',
       gender: 'male',
       isRevealed: isUnlocked,
       isVerified: true,
-      isPrivate: false,
-      visitsToday: 9,
-      lastVisitAgo: 'há 2h 15min',
-      frequency: 'Muito Alta',
-      relationshipCategory: 'Ex-Contato',
-      curiosityHint: 'Pesquisou seu @ diretamente na barra de busca 11 vezes esta semana.',
-      suspicionScore: 98,
-      commonFriendsCount: 21,
-      storyViewsWithoutFollowing: 8
-    },
-    {
-      id: 'stk-4',
-      name: isUnlocked ? 'Felipe Santos' : 'F***** S*****',
-      handle: isUnlocked ? 'felipe_santos' : 'felipe_****',
-      maskedHandle: 'felipe_****',
-      avatarSeed: 'Felipe',
-      avatarColor: 'from-purple-500 to-pink-600',
-      gender: 'male',
-      isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 5,
-      lastVisitAgo: 'há 4h 30min',
-      frequency: 'Alta',
-      relationshipCategory: 'Ex-Seguidor',
-      curiosityHint: 'Deixou de te seguir há 14 dias, mas continua visitando seu perfil quase toda noite.',
-      suspicionScore: 96,
-      commonFriendsCount: 17
+      visitsToday: getPrivateVisits('male', isFemaleUser, 16, 4),
+      lastVisitAgo: 'há 1h 15min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Crush Secreto' : 'Ex-Contato',
+      curiosityHint: isFemaleUser
+        ? 'Homem que pesquisou seu @ diretamente na barra de busca e olhou sua última foto de madrugada.'
+        : 'Pesquisou seu @ diretamente na barra de busca para ver sua última foto.',
+      suspicionScore: 98,
+      commonFriendsCount: 3
     },
     {
       id: 'stk-5',
-      name: isUnlocked ? 'Thiago Vasconcelos' : 'T***** V***********',
-      handle: isUnlocked ? 'thiago_vasconcelos' : 'thiago_****',
-      maskedHandle: 'thiago_****',
-      avatarSeed: 'Thiago',
-      avatarColor: 'from-emerald-500 to-teal-600',
-      gender: 'male',
-      isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 7,
-      lastVisitAgo: 'há 8h 20min',
-      frequency: 'Muito Alta',
-      relationshipCategory: 'Crush Secreto',
-      curiosityHint: 'Salvou 2 fotos suas na pasta secreta de favoritos do Instagram.',
-      suspicionScore: 92,
-      commonFriendsCount: 9,
-      savedPhotosCount: 2
-    },
-    {
-      id: 'stk-6',
       name: isUnlocked ? 'Luana Albuquerque' : 'L**** A**********',
       handle: isUnlocked ? 'luana.albuquerque' : 'luana.*****',
       maskedHandle: 'luana.*****',
       avatarSeed: 'Luana',
       avatarColor: 'from-amber-500 to-orange-600',
+      avatarUrl: 'https://i.ibb.co/FLcx50Tg/d49b9b3ea1840e4e47fe68a975d2bbb9.jpg',
       gender: 'female',
       isRevealed: isUnlocked,
       isVerified: true,
-      isPrivate: false,
-      visitsToday: 3,
-      lastVisitAgo: 'há 14h 45min',
-      frequency: 'Média',
-      relationshipCategory: 'Amigo Próximo',
-      curiosityHint: 'Encaminhou uma postagem recente sua no Direct para outra pessoa.',
-      suspicionScore: 89,
-      commonFriendsCount: 25
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 16, 5),
+      lastVisitAgo: isFemaleUser ? 'há 1h 45min' : 'há 1h 10min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Printou seu Post' : 'Salvou sua Foto',
+      curiosityHint: isFemaleUser
+        ? 'Tirou print do seu último post recente e visitou seu feed sem curtir nada.'
+        : 'Deu zoom na sua última foto do feed e salvou na pasta privada dela.',
+      suspicionScore: 96,
+      commonFriendsCount: 0
+    },
+    {
+      id: 'stk-6',
+      name: isUnlocked ? 'Thiago Santos' : 'T***** S*****',
+      handle: isUnlocked ? 'thiago_santos' : 'thiago_****',
+      maskedHandle: 'thiago_****',
+      avatarSeed: 'Thiago',
+      avatarColor: 'from-emerald-500 to-teal-600',
+      avatarUrl: 'https://i.ibb.co/bMg8g40t/8be4f20073a2fe50431ce0703d04395d.jpg',
+      gender: 'male',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 17, 4),
+      lastVisitAgo: 'há 2h 20min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Crush Secreto' : 'Amigo em Comum',
+      curiosityHint: isFemaleUser
+        ? 'Salvou sua última foto na pasta de favoritos do Instagram.'
+        : 'Visualizou sua última foto e último post recente.',
+      suspicionScore: 92,
+      commonFriendsCount: 2
     },
     // Perfil 3 Gratuito (+1 liberado posicionado mais abaixo após os bloqueados)
     // Se quem pesquisa for mulher: perfil masculino @vitor_ma0
@@ -263,11 +285,11 @@ export function generateStalkersList(
       followRelationship: 'neither',
       isFollowing: false,
       isFollower: false,
-      visitsToday: 8,
+      visitsToday: 2,
       lastVisitAgo: 'há 1d 3h 10min',
-      frequency: 'Muito Alta',
-      relationshipCategory: 'Stalker Noturno',
-      curiosityHint: 'Perfil externo: nenhum de vocês se segue. Encontrou seu perfil por busca direta e visitou na madrugada 4 vezes esta semana.',
+      frequency: 'Média',
+      relationshipCategory: 'Perfil Sugerido',
+      curiosityHint: 'Encontrou seu perfil porque apareceu na opção de perfis sugeridos e ficou no seu perfil por 5 minutos.',
       suspicionScore: 97,
       commonFriendsCount: 0,
       savedPhotosCount: 1,
@@ -278,7 +300,6 @@ export function generateStalkersList(
       mutualFriendsAvatars: [],
       mutualFriendsText: 'Perfil sugerido para você'
     },
-
     {
       id: 'stk-8',
       name: isUnlocked ? 'Bruno Nogueira' : 'B**** N*******',
@@ -286,34 +307,38 @@ export function generateStalkersList(
       maskedHandle: 'brunooo_****',
       avatarSeed: 'Bruno',
       avatarColor: 'from-blue-600 to-indigo-700',
+      avatarUrl: 'https://i.ibb.co/mV3ZFmFJ/36f3bdecab6f2d15d8671c15ac3e95ae.jpg',
       gender: 'male',
       isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 4,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 15, 5),
       lastVisitAgo: 'há 1d 9h 25min',
-      frequency: 'Alta',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Anônimo',
-      curiosityHint: 'Usa navegadores anônimos para visualizar seus stories sem aparecer na lista oficial.',
+      curiosityHint: 'Usa navegadores anônimos para visualizar seu último Story sem aparecer na lista oficial.',
       suspicionScore: 95,
-      commonFriendsCount: 12
+      commonFriendsCount: 0
     },
     {
       id: 'stk-9',
-      name: isUnlocked ? 'Fernanda Barreto' : 'F******* B******',
-      handle: isUnlocked ? 'fernanda_barreto' : 'fernanda_****',
-      maskedHandle: 'fernanda_****',
-      avatarSeed: 'Fernanda',
-      avatarColor: 'from-rose-500 to-red-600',
+      name: isUnlocked ? 'Beatriz Ramos' : 'B****** R****',
+      handle: isUnlocked ? 'bia.ramos_art' : 'beatriz_****',
+      maskedHandle: 'beatriz_****',
+      avatarSeed: 'Beatriz',
+      avatarColor: 'from-fuchsia-500 to-pink-600',
+      avatarUrl: 'https://i.ibb.co/TDN4w8zr/f0f612c99dae574a2a8850fd52a66fdd.jpg',
       gender: 'female',
       isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 6,
-      lastVisitAgo: 'há 2d 4h 15min',
-      frequency: 'Alta',
-      relationshipCategory: 'Ex-Contato',
-      curiosityHint: 'Visitou seu perfil 8 vezes nas últimas 48h sem deixar nenhuma curtida.',
-      suspicionScore: 91,
-      commonFriendsCount: 19
+      visitsToday: getPrivateVisits('female', isFemaleUser, 15, 6),
+      lastVisitAgo: isFemaleUser ? 'há 2d 4h 15min' : 'há 2h 20min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Ex-Seguidora (Vigia)' : 'Abriu seu Direct',
+      curiosityHint: isFemaleUser
+        ? 'Deixou de te seguir há 12 dias, mas entra no seu perfil todo dia para vigiar seu último post em off.'
+        : 'Abriu a conversa no Direct com você após ver seu último Story, mas não enviou mensagem.',
+      suspicionScore: 94,
+      commonFriendsCount: 2
     },
     {
       id: 'stk-10',
@@ -322,162 +347,320 @@ export function generateStalkersList(
       maskedHandle: 'felipe_****',
       avatarSeed: 'Felipe',
       avatarColor: 'from-cyan-500 to-blue-600',
+      avatarUrl: 'https://i.ibb.co/gFVCs9Tg/a6f398b941ca55be3168e65696c0dd10.jpg',
       gender: 'male',
       isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 5,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 18, 5),
       lastVisitAgo: 'há 2d 12h 40min',
-      frequency: 'Alta',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Ex-Seguidor',
-      curiosityHint: 'Deixou de te seguir há 1 mês, mas volta ao seu perfil a cada 2 dias.',
+      curiosityHint: 'Volta ao seu perfil para checar seu último post quase todos os dias.',
       suspicionScore: 93,
-      commonFriendsCount: 15
+      commonFriendsCount: 1
     },
     {
       id: 'stk-11',
-      name: isUnlocked ? 'Beatriz Ramos' : 'B****** R****',
-      handle: isUnlocked ? 'bia.ramos_art' : 'beatriz_****',
-      maskedHandle: 'beatriz_****',
-      avatarSeed: 'Beatriz',
-      avatarColor: 'from-fuchsia-500 to-pink-600',
+      name: isUnlocked ? 'Fernanda Barreto' : 'F******* B******',
+      handle: isUnlocked ? 'fernanda_barreto' : 'fernanda_****',
+      maskedHandle: 'fernanda_****',
+      avatarSeed: 'Fernanda',
+      avatarColor: 'from-rose-500 to-red-600',
+      avatarUrl: 'https://i.ibb.co/35zx4xJ1/1d3db4cfe1952fabac1db0c9b550c5f2.jpg',
       gender: 'female',
       isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 2,
-      lastVisitAgo: 'há 3d 2h 30min',
-      frequency: 'Média',
-      relationshipCategory: 'Crush Secreto',
-      curiosityHint: 'Curtiu e descurtiu por engano uma publicação antiga sua em 2 segundos.',
-      suspicionScore: 94,
-      commonFriendsCount: 7
+      visitsToday: getPrivateVisits('female', isFemaleUser, 14, 4),
+      lastVisitAgo: isFemaleUser ? 'há 3d 2h 30min' : 'há 3h 40min',
+      frequency: 'Muito Alta',
+      relationshipCategory: isFemaleUser ? 'Visualizador Anônimo' : 'Reviu Stories 6x',
+      curiosityHint: isFemaleUser
+        ? 'Assiste seu último Story por ferramenta anônima para não aparecer na sua lista de visualizações.'
+        : 'Reviu seu último Story 6 vezes seguidas sem te seguir.',
+      suspicionScore: 92,
+      commonFriendsCount: 0
     },
     {
       id: 'stk-12',
-      name: isUnlocked ? 'Gabriel Zanin' : 'G****** Z****',
-      handle: isUnlocked ? 'gabriel_zanin' : 'gabriel_****',
-      maskedHandle: 'gabriel_****',
-      avatarSeed: 'Gabriel',
+      name: isUnlocked ? 'Gabriela Zanin' : 'G******* Z****',
+      handle: isUnlocked ? 'gabi_zanin' : 'gabi_****',
+      maskedHandle: 'gabi_****',
+      avatarSeed: 'Gabriela',
       avatarColor: 'from-teal-500 to-emerald-600',
-      gender: 'male',
+      avatarUrl: 'https://i.ibb.co/PGTsn8TN/1c11683539dbf111e8b6aec021c54c86.jpg',
+      gender: 'female',
       isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 3,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 15, 5),
       lastVisitAgo: 'há 3d 15h 20min',
-      frequency: 'Média',
+      frequency: 'Alta',
       relationshipCategory: 'Amigo Próximo',
-      curiosityHint: 'Compartilhou seu carrossel de fotos recente em uma conversa privada.',
+      curiosityHint: 'Compartilhou seu último carrossel de fotos recente em uma conversa privada.',
       suspicionScore: 86,
-      commonFriendsCount: 22
+      commonFriendsCount: 3
     },
     {
       id: 'stk-13',
-      name: isUnlocked ? 'Letícia Pires' : 'L****** P****',
-      handle: isUnlocked ? 'leticia_pires' : 'leticia_****',
-      maskedHandle: 'leticia_****',
-      avatarSeed: 'Letícia',
+      name: isUnlocked ? 'Lucas Pires' : 'L**** P****',
+      handle: isUnlocked ? 'lucas_pires' : 'lucas_****',
+      maskedHandle: 'lucas_****',
+      avatarSeed: 'Lucas',
       avatarColor: 'from-pink-500 to-purple-600',
-      gender: 'female',
+      avatarUrl: 'https://i.ibb.co/SXCZP36C/a68e227b4647b3840f92a727684e236c.jpg',
+      gender: 'male',
       isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 4,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 19, 6),
       lastVisitAgo: 'há 4d 5h 45min',
-      frequency: 'Alta',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Stalker Noturno',
-      curiosityHint: 'Passou mais de 6 minutos vendo seus destaques antigos de viagens e eventos.',
+      curiosityHint: 'Passou mais de 6 minutos vendo seus últimos destaques antigos de viagens e eventos.',
       suspicionScore: 90,
-      commonFriendsCount: 11
+      commonFriendsCount: 0
     },
     {
       id: 'stk-14',
-      name: isUnlocked ? 'André Lima' : 'A**** L***',
-      handle: isUnlocked ? 'andre_lima_br' : 'andre_****',
-      maskedHandle: 'andre_****',
-      avatarSeed: 'André',
+      name: isUnlocked ? 'Andréa Lima' : 'A***** L***',
+      handle: isUnlocked ? 'andrea_lima_br' : 'andrea_****',
+      maskedHandle: 'andrea_****',
+      avatarSeed: 'Andréa',
       avatarColor: 'from-sky-500 to-blue-700',
-      gender: 'male',
+      avatarUrl: 'https://i.ibb.co/HLzLG2Bv/90acdd39af79a0ede5a8654167f8e00d.jpg',
+      gender: 'female',
       isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 7,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 16, 5),
       lastVisitAgo: 'há 4d 18h 10min',
       frequency: 'Muito Alta',
       relationshipCategory: 'Ex-Contato',
-      curiosityHint: 'Totalizou mais de 18 visitas acumuladas ao seu perfil durante os últimos 30 dias.',
+      curiosityHint: 'Acessou seu perfil repetidas vezes para acompanhar suas últimas fotos.',
       suspicionScore: 96,
-      commonFriendsCount: 16
+      commonFriendsCount: 2
     },
     {
       id: 'stk-15',
-      name: isUnlocked ? 'Juliana Fontes' : 'J****** F*****',
-      handle: isUnlocked ? 'ju.fontes' : 'juliana_****',
-      maskedHandle: 'juliana_****',
-      avatarSeed: 'Juliana',
+      name: isUnlocked ? 'Julio Fontes' : 'J**** F*****',
+      handle: isUnlocked ? 'julio.fontes' : 'julio_****',
+      maskedHandle: 'julio_****',
+      avatarSeed: 'Julio',
       avatarColor: 'from-rose-500 to-orange-500',
-      gender: 'female',
+      avatarUrl: 'https://i.ibb.co/93GhJfQR/80325f898083f906060f586cc1481bb3.jpg',
+      gender: 'male',
       isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 3,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 15, 4),
       lastVisitAgo: 'há 5d 7h 35min',
-      frequency: 'Média',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Crush Secreto',
-      curiosityHint: 'Deu zoom em 3 fotos do seu perfil e salvou uma nos favoritos.',
+      curiosityHint: 'Deu zoom na sua última foto do perfil e salvou nos favoritos.',
       suspicionScore: 87,
-      commonFriendsCount: 6
+      commonFriendsCount: 0
     },
     {
       id: 'stk-16',
-      name: isUnlocked ? 'Vítor Machado' : 'V**** M******',
-      handle: isUnlocked ? 'vitor_machado92' : 'vitor_****',
-      maskedHandle: 'vitor_****',
-      avatarSeed: 'Vítor',
+      name: isUnlocked ? 'Vitória Machado' : 'V****** M******',
+      handle: isUnlocked ? 'vitoria_machado' : 'vitoria_****',
+      maskedHandle: 'vitoria_****',
+      avatarSeed: 'Vitória',
       avatarColor: 'from-indigo-600 to-blue-700',
-      gender: 'male',
-      isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 4,
-      lastVisitAgo: 'há 5d 16h 50min',
-      frequency: 'Alta',
-      relationshipCategory: 'Anônimo',
-      curiosityHint: 'Abre seu perfil regularmente no horário de almoço pelo navegador web.',
-      suspicionScore: 88,
-      commonFriendsCount: 14
-    },
-    {
-      id: 'stk-17',
-      name: isUnlocked ? 'Isabela Cavalcanti' : 'I****** C*********',
-      handle: isUnlocked ? 'isabela_cavalcanti' : 'isabela_****',
-      maskedHandle: 'isabela_****',
-      avatarSeed: 'Isabela',
-      avatarColor: 'from-purple-600 to-pink-500',
+      avatarUrl: 'https://i.ibb.co/wkCbqSQ/395a2cfc1e75296df2b90fb7c21886e9.jpg',
       gender: 'female',
       isRevealed: isUnlocked,
       isPrivate: true,
-      visitsToday: 2,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 14, 5),
+      lastVisitAgo: 'há 5d 16h 50min',
+      frequency: 'Alta',
+      relationshipCategory: 'Anônimo',
+      curiosityHint: isFemaleUser
+        ? 'Compara curtidas do seu último post e vigia quem comenta nas suas publicações.'
+        : 'Checa seu último post e suas últimas fotos frequentemente.',
+      suspicionScore: 88,
+      commonFriendsCount: 1
+    },
+    {
+      id: 'stk-17',
+      name: isUnlocked ? 'Igor Cavalcanti' : 'I*** C*********',
+      handle: isUnlocked ? 'igor_cavalcanti' : 'igor_****',
+      maskedHandle: 'igor_****',
+      avatarSeed: 'Igor',
+      avatarColor: 'from-purple-600 to-pink-500',
+      avatarUrl: 'https://i.ibb.co/9kD9pddk/1456bd8bbd63723ef865becc9c5127c3.jpg',
+      gender: 'male',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 18, 5),
       lastVisitAgo: 'há 6d 4h 15min',
-      frequency: 'Média',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Ex-Seguidor',
-      curiosityHint: 'Visualizou seu perfil completo após parar de interagir nas suas publicações.',
+      curiosityHint: 'Acessou seu perfil logo após você postar seu último Story.',
       suspicionScore: 85,
-      commonFriendsCount: 18
+      commonFriendsCount: 0
     },
     {
       id: 'stk-18',
-      name: isUnlocked ? 'Matheus Borges' : 'M****** B*****',
-      handle: isUnlocked ? 'matheus.borges' : 'matheus_****',
-      maskedHandle: 'matheus_****',
-      avatarSeed: 'Matheus',
+      name: isUnlocked ? 'Mariana Borges' : 'M****** B*****',
+      handle: isUnlocked ? 'mariana.borges94' : 'mariana_****',
+      maskedHandle: 'mariana_****',
+      avatarSeed: 'Mariana',
       avatarColor: 'from-amber-600 to-red-600',
+      avatarUrl: 'https://i.ibb.co/gMWRJSfR/f1eb86f05c78ba95d426bba9b7458be6.jpg',
+      gender: 'female',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 15, 4),
+      lastVisitAgo: 'há 6d 21h 30min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Stalker Noturno',
+      curiosityHint: 'Visitou seu perfil logo após a publicação do seu último Story.',
+      suspicionScore: 82,
+      commonFriendsCount: 2
+    },
+    {
+      id: 'stk-19',
+      name: isUnlocked ? 'Rodrigo Ferreira' : 'R****** F*******',
+      handle: isUnlocked ? 'rodrigo_ferreira' : 'rodrigo_****',
+      maskedHandle: 'rodrigo_****',
+      avatarSeed: 'Rodrigo',
+      avatarColor: 'from-cyan-600 to-blue-700',
+      avatarUrl: 'https://i.ibb.co/N6MxQddv/a4d03f0798e0925cc14e15821379be84.jpg',
       gender: 'male',
       isRevealed: isUnlocked,
-      isPrivate: false,
-      visitsToday: 1,
-      lastVisitAgo: 'há 6d 21h 30min',
-      frequency: 'Média',
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 16, 5),
+      lastVisitAgo: 'há 7d 3h 10min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Crush Secreto',
+      curiosityHint: 'Ficou vários minutos rolando suas últimas fotos e salvou uma nos favoritos.',
+      suspicionScore: 91,
+      commonFriendsCount: 0
+    },
+    {
+      id: 'stk-20',
+      name: isUnlocked ? 'Juliana Castro' : 'J****** C*****',
+      handle: isUnlocked ? 'ju_castro_oficial' : 'ju_castro_****',
+      maskedHandle: 'ju_castro_****',
+      avatarSeed: 'Juliana',
+      avatarColor: 'from-pink-500 to-rose-600',
+      avatarUrl: 'https://i.ibb.co/ccgm29G8/52e1507c8716cfaa99ac2d31a1fa83e3.jpg',
+      gender: 'female',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 14, 5),
+      lastVisitAgo: 'há 7d 8h 40min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Amigo Próximo',
+      curiosityHint: 'Visualizou seu último post e últimos Stories em sequência rápida.',
+      suspicionScore: 89,
+      commonFriendsCount: 3
+    },
+    {
+      id: 'stk-21',
+      name: isUnlocked ? 'Rafael Barros' : 'R***** B*****',
+      handle: isUnlocked ? 'rafael_barros_br' : 'rafael_****',
+      maskedHandle: 'rafael_****',
+      avatarSeed: 'Rafael',
+      avatarColor: 'from-emerald-600 to-teal-700',
+      avatarUrl: 'https://i.ibb.co/qHdXHxn/e5775cd932b8daccd076002e180f84b4.jpg',
+      gender: 'male',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 20, 6),
+      lastVisitAgo: 'há 7d 14h 25min',
+      frequency: 'Muito Alta',
       relationshipCategory: 'Stalker Noturno',
-      curiosityHint: 'Visitou seu perfil logo após você postar uma foto nos Stories.',
-      suspicionScore: 82,
-      commonFriendsCount: 9
+      curiosityHint: 'Salvou seu último post em coleção particular.',
+      suspicionScore: 94,
+      commonFriendsCount: 0
+    },
+    {
+      id: 'stk-22',
+      name: isUnlocked ? 'Larissa Gomes' : 'L****** G****',
+      handle: isUnlocked ? 'lari_gomes_rj' : 'lari_****',
+      maskedHandle: 'lari_****',
+      avatarSeed: 'Larissa',
+      avatarColor: 'from-fuchsia-600 to-purple-600',
+      avatarUrl: 'https://i.ibb.co/Q3jmsfQv/b9821e8d3cfc2f9837c1e3cd63d2ce53.jpg',
+      gender: 'female',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 15, 5),
+      lastVisitAgo: 'há 7d 19h 50min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Ex-Contato',
+      curiosityHint: 'Registrou visualizações no seu perfil de madrugada para olhar suas últimas fotos.',
+      suspicionScore: 88,
+      commonFriendsCount: 1
+    },
+    {
+      id: 'stk-23',
+      name: isUnlocked ? 'Vinicius Ribeiro' : 'V******* R******',
+      handle: isUnlocked ? 'vini_ribeiro_real' : 'vini_****',
+      maskedHandle: 'vini_****',
+      avatarSeed: 'Vinicius',
+      avatarColor: 'from-blue-500 to-sky-600',
+      avatarUrl: 'https://i.ibb.co/QjzZnjW6/a07909e6bcfbf093ce2b4348cca3348a.jpg',
+      gender: 'male',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('male', isFemaleUser, 15, 4),
+      lastVisitAgo: 'há 8d 2h 15min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Ex-Seguidor',
+      curiosityHint: 'Acessou seu perfil repetidas vezes logo após seu último post no feed.',
+      suspicionScore: 87,
+      commonFriendsCount: 0
+    },
+    {
+      id: 'stk-24',
+      name: isUnlocked ? 'Bruna Peixoto' : 'B**** P******',
+      handle: isUnlocked ? 'bruna_peixoto_pe' : 'bruna_****',
+      maskedHandle: 'bruna_****',
+      avatarSeed: 'Bruna',
+      avatarColor: 'from-rose-500 to-amber-500',
+      avatarUrl: 'https://i.ibb.co/Q3jmsfQv/b9821e8d3cfc2f9837c1e3cd63d2ce53.jpg',
+      gender: 'female',
+      isRevealed: isUnlocked,
+      isPrivate: true,
+      visitsToday: getPrivateVisits('female', isFemaleUser, 14, 5),
+      lastVisitAgo: 'há 8d 6h 30min',
+      frequency: 'Muito Alta',
+      relationshipCategory: 'Amigo Próximo',
+      curiosityHint: 'Acompanha seus últimos posts regularmente sem deixar registros de curtidas.',
+      suspicionScore: 90,
+      commonFriendsCount: 2
     }
   ];
+
+  if (!isFemaleUser) {
+    // Para homens: priorizar todas as mulheres na frente dos perfis bloqueados!
+    // Ele não liga para outro homem, ele só pensa em mulheres que visitaram o perfil dele.
+    const free1 = baseList[0];
+    const free2 = baseList[1];
+    const free3 = baseList[6]; // stk-7
+
+    const locked = baseList.filter(s => !s.isRevealed);
+    const lockedFemales = locked.filter(s => s.gender === 'female');
+    const lockedMales = locked.filter(s => s.gender === 'male');
+
+    const top4Females = lockedFemales.slice(0, 4);
+    const restFemales = lockedFemales.slice(4);
+
+    const reordered: StalkerVisitor[] = [
+      free1,
+      free2,
+      ...top4Females,
+      free3,
+      ...restFemales,
+      ...lockedMales
+    ];
+
+    reordered.forEach((s, idx) => {
+      s.id = `stk-${idx + 1}`;
+    });
+
+    baseList.length = 0;
+    baseList.push(...reordered);
+  }
 
   if (!targetCount || targetCount <= baseList.length) {
     return targetCount ? baseList.slice(0, Math.max(2, targetCount)) : baseList;
@@ -495,35 +678,35 @@ export function generateStalkersList(
 
   const extraPool = [
     { first: 'Felipe', last: 'Rocha', gender: 'male' as const, handle: 'felipe_rocha94', cat: 'Stalker Noturno' as const, hint: 'Acessou seu perfil repetidas vezes durante a madrugada.' },
-    { first: 'Juliana', last: 'Castro', gender: 'female' as const, handle: 'ju_castro_oficial', cat: 'Amigo Próximo' as const, hint: 'Visualizou suas publicações e Stories em sequência rápida.' },
-    { first: 'Lucas', last: 'Moraes', gender: 'male' as const, handle: 'lucasmoraes_sp', cat: 'Crush Secreto' as const, hint: 'Passou mais de 4 minutos rolando fotos do seu feed.' },
+    { first: 'Juliana', last: 'Castro', gender: 'female' as const, handle: 'ju_castro_oficial', cat: 'Amigo Próximo' as const, hint: 'Visualizou seu último post e últimos Stories em sequência rápida.' },
+    { first: 'Lucas', last: 'Moraes', gender: 'male' as const, handle: 'lucasmoraes_sp', cat: 'Crush Secreto' as const, hint: 'Passou mais de 4 minutos rolando as fotos do seu último post.' },
     { first: 'Beatriz', last: 'Santana', gender: 'female' as const, handle: 'bia_santana_', cat: 'Ex-Seguidor' as const, hint: 'Pesquisou seu @ diretamente na barra de busca.' },
-    { first: 'Gabriel', last: 'Almeida', gender: 'male' as const, handle: 'gabriel_almeida91', cat: 'Ex-Contato' as const, hint: 'Abriu suas fotos em destaque e deu zoom nos posts.' },
-    { first: 'Larissa', last: 'Gomes', gender: 'female' as const, handle: 'lari_gomes_rj', cat: 'Stalker Noturno' as const, hint: 'Registrou 5 visualizações entre 02:00 e 04:30.' },
-    { first: 'Rafael', last: 'Barros', gender: 'male' as const, handle: 'rafael_barros_br', cat: 'Crush Secreto' as const, hint: 'Salvou uma publicação sua em coleção particular.' },
-    { first: 'Camila', last: 'Azevedo', gender: 'female' as const, handle: 'mila_azevedo97', cat: 'Amigo Próximo' as const, hint: 'Encaminhou postagem sua via mensagem direta.' },
-    { first: 'Vinicius', last: 'Ribeiro', gender: 'male' as const, handle: 'vini_ribeiro_real', cat: 'Ex-Seguidor' as const, hint: 'Acessou seu perfil após você publicar um Story novo.' },
+    { first: 'Gabriel', last: 'Almeida', gender: 'male' as const, handle: 'gabriel_almeida91', cat: 'Ex-Contato' as const, hint: 'Abriu seus destaques e deu zoom no seu último post.' },
+    { first: 'Larissa', last: 'Gomes', gender: 'female' as const, handle: 'lari_gomes_rj', cat: 'Stalker Noturno' as const, hint: 'Registrou acessos de madrugada logo após seu último Story.' },
+    { first: 'Rafael', last: 'Barros', gender: 'male' as const, handle: 'rafael_barros_br', cat: 'Crush Secreto' as const, hint: 'Salvou seu último post em uma coleção particular.' },
+    { first: 'Camila', last: 'Azevedo', gender: 'female' as const, handle: 'mila_azevedo97', cat: 'Amigo Próximo' as const, hint: 'Encaminhou seu último post via mensagem direta.' },
+    { first: 'Vinicius', last: 'Ribeiro', gender: 'male' as const, handle: 'vini_ribeiro_real', cat: 'Ex-Seguidor' as const, hint: 'Acessou seu perfil após você publicar seu último Story.' },
     { first: 'Amanda', last: 'Cardoso', gender: 'female' as const, handle: 'amanda_cardoso_df', cat: 'Ex-Contato' as const, hint: 'Visualizou seu perfil sem seguir ou curtir nada.' },
     { first: 'Gustavo', last: 'Freitas', gender: 'male' as const, handle: 'gustavo_freitas01', cat: 'Stalker Noturno' as const, hint: 'Visitou seu perfil 3 noites seguidas esta semana.' },
-    { first: 'Patricia', last: 'Ramos', gender: 'female' as const, handle: 'patricia_ramos_br', cat: 'Crush Secreto' as const, hint: 'Ficou vários minutos navegando nas fotos antigas.' },
-    { first: 'Diego', last: 'Martins', gender: 'male' as const, handle: 'diego_martins_99', cat: 'Amigo Próximo' as const, hint: 'Checou seu status e Stories repetidamente.' },
+    { first: 'Patricia', last: 'Ramos', gender: 'female' as const, handle: 'patricia_ramos_br', cat: 'Crush Secreto' as const, hint: 'Ficou vários minutos navegando desde suas fotos até seu último post.' },
+    { first: 'Diego', last: 'Martins', gender: 'male' as const, handle: 'diego_martins_99', cat: 'Amigo Próximo' as const, hint: 'Checou seu perfil e seu último Story repetidamente.' },
     { first: 'Fernanda', last: 'Pinto', gender: 'female' as const, handle: 'nanda_pinto_ofc', cat: 'Ex-Contato' as const, hint: 'Pesquisou seu nome completo na busca do Instagram.' },
-    { first: 'Leonardo', last: 'Teixeira', gender: 'male' as const, handle: 'leo_teixeira_sp', cat: 'Stalker Noturno' as const, hint: 'Registrou visita às 03:15 da madrugada.' },
-    { first: 'Renata', last: 'Correia', gender: 'female' as const, handle: 'renata_correia95', cat: 'Ex-Seguidor' as const, hint: 'Acompanha seus posts sem deixar rastro de curtidas.' },
-    { first: 'Thiago', last: 'Monteiro', gender: 'male' as const, handle: 'thiago_monteiro_br', cat: 'Crush Secreto' as const, hint: 'Abriu suas fotos salvas e stories com frequência.' },
+    { first: 'Leonardo', last: 'Teixeira', gender: 'male' as const, handle: 'leo_teixeira_sp', cat: 'Stalker Noturno' as const, hint: 'Registrou visita às 03:15 da madrugada após seu último Story.' },
+    { first: 'Renata', last: 'Correia', gender: 'female' as const, handle: 'renata_correia95', cat: 'Ex-Seguidor' as const, hint: 'Acompanha seus últimos posts sem deixar rastro de curtidas.' },
+    { first: 'Thiago', last: 'Monteiro', gender: 'male' as const, handle: 'thiago_monteiro_br', cat: 'Crush Secreto' as const, hint: 'Abriu seu último post e últimos Stories com frequência.' },
     { first: 'Vanessa', last: 'Lopes', gender: 'female' as const, handle: 'vanessa_lopes_mg', cat: 'Amigo Próximo' as const, hint: 'Interage e visita seu perfil com alta frequência.' },
-    { first: 'Murilo', last: 'Cavalcante', gender: 'male' as const, handle: 'murilo_caval', cat: 'Stalker Noturno' as const, hint: 'Visualizações de madrugada registradas no feed.' },
+    { first: 'Murilo', last: 'Cavalcante', gender: 'male' as const, handle: 'murilo_caval', cat: 'Stalker Noturno' as const, hint: 'Visualizações de madrugada no seu último post.' },
     { first: 'Tatiane', last: 'Farias', gender: 'female' as const, handle: 'tati_farias_ofc', cat: 'Ex-Contato' as const, hint: 'Acessou seu perfil diretamente pelo link compartilhado.' },
-    { first: 'Caio', last: 'Mendes', gender: 'male' as const, handle: 'caio_mendes_92', cat: 'Crush Secreto' as const, hint: 'Visitou fotos em destaques e Stories recentemente.' },
-    { first: 'Aline', last: 'Duarte', gender: 'female' as const, handle: 'aline_duarte_sp', cat: 'Ex-Seguidor' as const, hint: 'Deixou de seguir mas continua abrindo seu feed.' },
-    { first: 'Eduardo', last: 'Silveira', gender: 'male' as const, handle: 'edu_silveira_rs', cat: 'Stalker Noturno' as const, hint: 'Múltiplos acessos no período noturno.' },
-    { first: 'Carolina', last: 'Neves', gender: 'female' as const, handle: 'carol_neves_ba', cat: 'Amigo Próximo' as const, hint: 'Visualizou sua última atualização há poucos minutos.' },
-    { first: 'Andre', last: 'Machado', gender: 'male' as const, handle: 'andre_machado_pr', cat: 'Ex-Contato' as const, hint: 'Checou suas publicações recentes e perfil.' },
-    { first: 'Jessica', last: 'Vieira', gender: 'female' as const, handle: 'jessica_vieira_ce', cat: 'Crush Secreto' as const, hint: 'Visualizou perfil com tempo prolongado de permanência.' },
-    { first: 'Marcos', last: 'Fernandes', gender: 'male' as const, handle: 'marcos_fernandes_go', cat: 'Stalker Noturno' as const, hint: 'Acessos noturnos sequenciais aos Stories.' },
-    { first: 'Daniela', last: 'Braga', gender: 'female' as const, handle: 'dani_braga_sc', cat: 'Amigo Próximo' as const, hint: 'Visita regular ao perfil nas últimas 24 horas.' },
-    { first: 'Alexandre', last: 'Cunha', gender: 'male' as const, handle: 'alex_cunha_es', cat: 'Ex-Seguidor' as const, hint: 'Acessou seu feed após parar de seguir sua conta.' },
-    { first: 'Bruna', last: 'Peixoto', gender: 'female' as const, handle: 'bruna_peixoto_pe', cat: 'Ex-Contato' as const, hint: 'Registrou visita anônima aos Stories recentes.' }
+    { first: 'Caio', last: 'Mendes', gender: 'male' as const, handle: 'caio_mendes_92', cat: 'Crush Secreto' as const, hint: 'Visitou fotos em destaques e seu último Story recentemente.' },
+    { first: 'Aline', last: 'Duarte', gender: 'female' as const, handle: 'aline_duarte_sp', cat: 'Ex-Seguidor' as const, hint: 'Deixou de seguir mas continua abrindo seu perfil e último post.' },
+    { first: 'Eduardo', last: 'Silveira', gender: 'male' as const, handle: 'edu_silveira_rs', cat: 'Stalker Noturno' as const, hint: 'Múltiplos acessos no período noturno ao seu último Story.' },
+    { first: 'Carolina', last: 'Neves', gender: 'female' as const, handle: 'carol_neves_ba', cat: 'Amigo Próximo' as const, hint: 'Visualizou seu último post há poucos minutos.' },
+    { first: 'Andre', last: 'Machado', gender: 'male' as const, handle: 'andre_machado_pr', cat: 'Ex-Contato' as const, hint: 'Checou seu último post e perfil.' },
+    { first: 'Jessica', last: 'Vieira', gender: 'female' as const, handle: 'jessica_vieira_ce', cat: 'Crush Secreto' as const, hint: 'Visualizou perfil e último post com tempo prolongado de permanência.' },
+    { first: 'Marcos', last: 'Fernandes', gender: 'male' as const, handle: 'marcos_fernandes_go', cat: 'Stalker Noturno' as const, hint: 'Acessos noturnos sequenciais aos seus últimos Stories.' },
+    { first: 'Daniela', last: 'Braga', gender: 'female' as const, handle: 'dani_braga_sc', cat: 'Amigo Próximo' as const, hint: 'Visita regular ao perfil e último Story nas últimas 24 horas.' },
+    { first: 'Alexandre', last: 'Cunha', gender: 'male' as const, handle: 'alex_cunha_es', cat: 'Ex-Seguidor' as const, hint: 'Acessou seu perfil após parar de seguir sua conta.' },
+    { first: 'Bruna', last: 'Peixoto', gender: 'female' as const, handle: 'bruna_peixoto_pe', cat: 'Ex-Contato' as const, hint: 'Registrou visita anônima ao seu último Story.' }
   ];
 
   const colorGradients = [
@@ -546,6 +729,8 @@ export function generateStalkersList(
     const extraDay = 1 + ((i * 2 + 1) % 6);
     const extraHour = (i * 3 + 2) % 23;
     const extraMin = ((i * 11 + 9) % 50) + 5;
+    const extraFriends = (i % 3 === 0) ? 0 : (1 + (i % 3));
+    const extraVisits = getPrivateVisits(item.gender, isFemaleUser, 14 + (i % 6), 4 + (i % 3));
 
     extraList.push({
       id: `stk-${idNum}`,
@@ -556,14 +741,14 @@ export function generateStalkersList(
       avatarColor: colorGradients[i % colorGradients.length],
       gender: item.gender,
       isRevealed: isUnlocked,
-      isPrivate: i % 2 === 0,
-      visitsToday: 1 + ((i * 3) % 7),
+      isPrivate: true,
+      visitsToday: extraVisits,
       lastVisitAgo: `há ${extraDay}d ${extraHour}h ${extraMin}min`,
-      frequency: (i % 3 === 0 ? 'Muito Alta' : i % 2 === 0 ? 'Alta' : 'Média'),
+      frequency: (i % 2 === 0 ? 'Muito Alta' : 'Alta'),
       relationshipCategory: item.cat,
       curiosityHint: item.hint,
       suspicionScore: 80 + (i % 18),
-      commonFriendsCount: 3 + (i % 22)
+      commonFriendsCount: extraFriends
     });
   }
 
@@ -673,6 +858,8 @@ export function applyRealConnectionsToStalkers(
 
     const gender1 = conn1.gender || detectGender(conn1.fullName, conn1.bio, conn1.username);
 
+    const visits1 = 2; // Máximo 2x em perfis abertos
+
     updated[0] = {
       ...updated[0],
       handle: conn1.username,
@@ -684,6 +871,8 @@ export function applyRealConnectionsToStalkers(
       followRelationship: conn1.followRelationship || (isConn1Following && isConn1Follower ? 'mutual' : isConn1Following ? 'mutual' : isConn1Follower ? 'they_follow_you' : 'neither'),
       isFollowing: isConn1Following,
       isFollower: isConn1Follower,
+      visitsToday: visits1,
+      frequency: 'Média',
       bio: conn1.bio !== undefined && conn1.bio !== null ? conn1.bio : updated[0].bio,
       followersCount: typeof conn1.followersCount === 'number' ? conn1.followersCount : updated[0].followersCount,
       followingCount: typeof conn1.followingCount === 'number' ? conn1.followingCount : updated[0].followingCount,
@@ -691,9 +880,7 @@ export function applyRealConnectionsToStalkers(
       isVerified: conn1.isVerified,
       isPrivate: conn1.isPrivate,
       postImages: postImgs1,
-      curiosityHint: isConn1Following
-        ? `Vocês se seguem mutuamente. Visualizou suas publicações recentes e abriu seus últimos stories ${updated[0].visitsToday}x nos últimos 7 dias.`
-        : `Segue você, mas você não segue de volta. Visitou seu perfil ${updated[0].visitsToday}x nos últimos 7 dias e abriu seus últimos stories.`,
+      curiosityHint: `Visualizou seu último post e abriu seu último Story ${visits1} vezes em menos de 10 minutos.`,
       mutualFriendsText: isConn1Following
         ? `Seguem-se · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[0].commonFriendsCount - 1)} pessoas`
         : `Segue você · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[0].commonFriendsCount - 1)} pessoas`,
@@ -721,6 +908,7 @@ export function applyRealConnectionsToStalkers(
       : (conn2.followRelationship === 'mutual');
 
     const gender2 = conn2.gender || detectGender(conn2.fullName, conn2.bio, conn2.username);
+    const visits2 = 2; // Máximo 2x em perfis abertos
 
     updated[1] = {
       ...updated[1],
@@ -733,6 +921,8 @@ export function applyRealConnectionsToStalkers(
       followRelationship: conn2.followRelationship || (isConn2Following && isConn2Follower ? 'mutual' : isConn2Following ? 'mutual' : isConn2Follower ? 'they_follow_you' : 'neither'),
       isFollowing: isConn2Following,
       isFollower: isConn2Follower,
+      visitsToday: visits2,
+      frequency: 'Média',
       bio: conn2.bio !== undefined && conn2.bio !== null ? conn2.bio : updated[1].bio,
       followersCount: typeof conn2.followersCount === 'number' ? conn2.followersCount : updated[1].followersCount,
       followingCount: typeof conn2.followingCount === 'number' ? conn2.followingCount : updated[1].followingCount,
@@ -740,9 +930,7 @@ export function applyRealConnectionsToStalkers(
       isVerified: conn2.isVerified,
       isPrivate: conn2.isPrivate,
       postImages: postImgs2,
-      curiosityHint: isConn2Following
-        ? `Vocês se seguem mutuamente. Visualizou suas publicações recentes e passou vários minutos rolando seu feed.`
-        : `Segue você, mas você não segue de volta. Visitou seu perfil ${updated[1].visitsToday}x nos últimos 7 dias.`,
+      curiosityHint: 'Entrou no seu perfil através do último Reels que você curtiu, e ficou alguns segundos.',
       mutualFriendsText: isConn2Following
         ? `Seguem-se · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[1].commonFriendsCount - 1)} pessoas`
         : `Segue você · Seguido(a) por ${targetHandle} e outras ${Math.max(2, updated[1].commonFriendsCount - 1)} pessoas`,
@@ -771,6 +959,7 @@ export function applyRealConnectionsToStalkers(
       : false;
 
     const gender3 = conn3.gender || (targetUserGender === 'female' ? 'male' : 'female');
+    const visits3 = 2; // Máximo 2x em perfis abertos
 
     updated[stk7Index] = {
       ...updated[stk7Index],
@@ -783,6 +972,8 @@ export function applyRealConnectionsToStalkers(
       followRelationship: conn3.followRelationship || (isConn3Following && isConn3Follower ? 'mutual' : isConn3Following ? 'mutual' : isConn3Follower ? 'they_follow_you' : 'neither'),
       isFollowing: isConn3Following,
       isFollower: isConn3Follower,
+      visitsToday: visits3,
+      frequency: 'Média',
       bio: conn3.bio !== undefined && conn3.bio !== null ? conn3.bio : updated[stk7Index].bio,
       followersCount: typeof conn3.followersCount === 'number' ? conn3.followersCount : updated[stk7Index].followersCount,
       followingCount: typeof conn3.followingCount === 'number' ? conn3.followingCount : updated[stk7Index].followingCount,
@@ -790,9 +981,8 @@ export function applyRealConnectionsToStalkers(
       isVerified: conn3.isVerified,
       isPrivate: conn3.isPrivate,
       postImages: postImgs3,
-      curiosityHint: isConn3Following
-        ? `Vocês se seguem no Instagram. Visitou seu perfil na madrugada ${updated[stk7Index].visitsToday}x esta semana.`
-        : `Perfil externo: nenhum de vocês se segue. Encontrou seu perfil por busca direta e visitou na madrugada ${updated[stk7Index].visitsToday}x esta semana.`,
+      relationshipCategory: 'Perfil Sugerido',
+      curiosityHint: 'Encontrou seu perfil porque apareceu na opção de perfis sugeridos e ficou no seu perfil por 5 minutos.',
       mutualFriendsText: isConn3Following ? `Seguem-se · Seguido(a) por ${targetHandle}` : 'Perfil sugerido para você',
       mutualFriendsAvatars: [],
     };
@@ -800,3 +990,4 @@ export function applyRealConnectionsToStalkers(
 
   return updated;
 }
+

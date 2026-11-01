@@ -48,7 +48,33 @@ export interface StalkerVisitor {
   visitsToday: number;
   lastVisitAgo: string;
   frequency: 'Alta' | 'Média' | 'Muito Alta';
-  relationshipCategory: 'Ex-Contato' | 'Crush Secreto' | 'Stalker Noturno' | 'Ex-Seguidor' | 'Amigo Próximo' | 'Anônimo';
+  relationshipCategory: 
+    | 'Ex-Contato' 
+    | 'Crush Secreto' 
+    | 'Stalker Noturno' 
+    | 'Ex-Seguidor' 
+    | 'Amigo Próximo' 
+    | 'Anônimo'
+    | 'Encaminhou no Direct'
+    | 'Printou seu Post'
+    | 'Ex-Seguidora (Vigia)'
+    | 'Visualizador Anônimo'
+    | 'Stalker da Madrugada'
+    | 'Salvou sua Foto'
+    | 'Abriu seu Direct'
+    | 'Reviu Stories 6x'
+    | 'Fofoca em Grupo'
+    | 'Zoom em Destaques'
+    | 'Monitoramento Oculto'
+    | 'Falsa Amiga'
+    | 'Pesquisa Direta'
+    | 'Ex-Seguidora'
+    | 'Admiradora Oculta'
+    | 'Amigo em Comum'
+    | 'Conhecido'
+    | 'Perfil Sugerido'
+    | 'Crush Secreta'
+    | 'Stalker Noturna';
   curiosityHint: string;
   suspicionScore?: number;
   isVerified?: boolean;

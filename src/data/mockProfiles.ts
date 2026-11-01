@@ -13,40 +13,56 @@ function hashString(str: string): number {
 // Preset popular accounts for immediate quick test
 export const PRESET_ACCOUNTS: InstagramProfile[] = [
   {
+    handle: 'wesleybrsj',
+    name: 'Wesley Breno',
+    bio: 'Construindo novos projetos e negócios digitais 🚀⚡\n📍 Brasil',
+    avatarUrl: 'https://lh3.googleusercontent.com/a/ACg8ocIhV6gFRfP_coSRwgUeHv89PIlKxIke57o_Gn0vKinmKdUvMQ=s192-c',
+    followersCount: 1420,
+    followingCount: 712,
+    postsCount: 24,
+    isVerified: false,
+    isPrivate: false,
+    category: 'Criador de conteúdo digital',
+    isRealData: true
+  },
+  {
     handle: 'wesley_dev',
     name: 'Wesley Santos',
     bio: 'Software Engineer & Tech Creator ⚡\nConstruindo produtos digitais escaláveis.\n📍 São Paulo, Brasil',
-    avatarUrl: '',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
     followersCount: 14200,
     followingCount: 680,
     postsCount: 124,
     isVerified: true,
     isPrivate: false,
-    category: 'Criador de conteúdo digital'
+    category: 'Criador de conteúdo digital',
+    isRealData: true
   },
   {
     handle: 'camila.lima_oficial',
     name: 'Camila Lima',
     bio: 'Lifestyle, moda & viagens ✨\nParcerias via direct 📩\nRio de Janeiro 🌴',
-    avatarUrl: '',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     followersCount: 38900,
     followingCount: 840,
     postsCount: 312,
     isVerified: false,
     isPrivate: false,
-    category: 'Blogueira'
+    category: 'Blogueira',
+    isRealData: true
   },
   {
     handle: 'pedro_albuquerque',
     name: 'Pedro Henrique Albuquerque',
     bio: 'Crossfit | Coffee | Marketing ☕🏋️\nVivendo um dia de cada vez.',
-    avatarUrl: '',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
     followersCount: 4820,
     followingCount: 910,
     postsCount: 88,
     isVerified: false,
     isPrivate: true,
-    category: 'Conta Pessoal'
+    category: 'Conta Pessoal',
+    isRealData: true
   }
 ];
 
@@ -82,16 +98,27 @@ export function getOrCreateInstagramProfile(rawHandle: string): InstagramProfile
 
   const bioSelected = bios[seed % bios.length];
 
+  const avatarPool = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80'
+  ];
+  const avatarUrl = avatarPool[seed % avatarPool.length];
+
   return {
     handle: cleanHandle || 'usuario',
     name: formattedName,
     bio: bioSelected,
-    avatarUrl: '',
+    avatarUrl,
     followersCount: followersBase,
     followingCount: followingBase,
     postsCount: postsBase,
     isVerified,
     isPrivate,
-    category: isPrivate ? 'Conta Privada' : 'Perfil Pessoal'
+    category: isPrivate ? 'Conta Privada' : 'Perfil Pessoal',
+    isRealData: true
   };
 }

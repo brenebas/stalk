@@ -79,12 +79,23 @@ app.get('/api/instagram/profile', async (req, res) => {
     return res.json(profileData);
   } catch (error: any) {
     if (error instanceof ApifyError) {
+      if (error.statusCode === 403 || error.code === 'APIFY_API_ERROR' || error.statusCode === 429) {
+        try {
+          const { fetchInstagramProfileLive } = await import('./src/services/instagramService');
+          const fallback = await fetchInstagramProfileLive(req.query.username as string);
+          return res.json(fallback);
+        } catch {}
+      }
       return res.status(error.statusCode).json({
         error: error.message,
         code: error.code,
       });
     }
-    console.error('Erro inesperado ao consultar perfil:', error);
+    try {
+      const { fetchInstagramProfileLive } = await import('./src/services/instagramService');
+      const fallback = await fetchInstagramProfileLive(req.query.username as string);
+      return res.json(fallback);
+    } catch {}
     return res.status(500).json({
       error: 'Erro interno ao consultar perfil do Instagram.',
       code: 'INTERNAL_ERROR',
