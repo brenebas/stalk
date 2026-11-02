@@ -50,8 +50,23 @@ export default function App() {
   }, [currentProfile?.handle, currentProfile?.isRealData]);
 
   // Handlers
+  const cleanHandle = (raw: string): string => {
+    if (!raw) return '';
+    let str = raw.trim();
+    str = str.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '');
+    str = str.split('?')[0].split('/')[0];
+    str = str.replace(/^@+/, '').trim();
+    str = str.replace(/\s+/g, '');
+    return str.toLowerCase();
+  };
+
   const handleSubmitHandle = async (rawHandle: string) => {
-    const clean = rawHandle.replace(/^@/, '').trim();
+    const clean = cleanHandle(rawHandle);
+    if (!clean) {
+      setSearchError('Por favor, digite o nome de usuário do Instagram.');
+      return;
+    }
+
     setIsSearchingProfile(true);
     setSearchError('');
     setRealConnections([]);
@@ -110,7 +125,7 @@ export default function App() {
   };
 
   const handleStartDemo = (rawHandle?: string) => {
-    const clean = (rawHandle || 'demo.lifestyle').replace(/^@/, '').trim() || 'demo.lifestyle';
+    const clean = cleanHandle(rawHandle || 'demo.lifestyle') || 'demo.lifestyle';
     const demoData = getDemoInstagramProfile(clean);
     const demoMetrics = generateScanMetrics(
       demoData.handle,

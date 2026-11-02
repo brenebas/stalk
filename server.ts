@@ -11,7 +11,7 @@ import {
   validateUsername,
   clearBackendCache,
   ApifyBackendError,
-} from './api/lib/apifyBackendService';
+} from './src/services/apifyInstagramService.ts';
 
 dotenv.config();
 
@@ -74,17 +74,13 @@ app.get('/api/instagram/profile', async (req, res) => {
     const profileData = await fetchInstagramProfile(rawUsername, forceRefresh);
     return res.json(profileData);
   } catch (error: any) {
-    if (error instanceof ApifyBackendError) {
-      return res.status(error.statusCode).json({
-        error: error.message,
-        code: error.code,
-        isRealData: false,
-      });
-    }
+    const statusCode = error?.statusCode || 500;
+    const code = error?.code || 'INTERNAL_ERROR';
+    const message = error?.message || 'Erro interno ao consultar perfil do Instagram.';
 
-    return res.status(500).json({
-      error: 'Erro interno ao consultar perfil do Instagram.',
-      code: 'INTERNAL_ERROR',
+    return res.status(statusCode).json({
+      error: message,
+      code,
       isRealData: false,
     });
   }
@@ -99,18 +95,13 @@ app.get('/api/instagram/connections', async (req, res) => {
     const result = await fetchInstagramConnections(rawUsername, forceRefresh);
     return res.json(result);
   } catch (error: any) {
-    if (error instanceof ApifyBackendError) {
-      return res.status(error.statusCode).json({
-        error: error.message,
-        code: error.code,
-        connections: [],
-        isRealData: false,
-      });
-    }
+    const statusCode = error?.statusCode || 500;
+    const code = error?.code || 'INTERNAL_ERROR';
+    const message = error?.message || 'Erro ao consultar conexões do Instagram.';
 
-    return res.status(500).json({
-      error: 'Erro ao consultar conexões do Instagram.',
-      code: 'INTERNAL_ERROR',
+    return res.status(statusCode).json({
+      error: message,
+      code,
       connections: [],
       isRealData: false,
     });

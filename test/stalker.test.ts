@@ -207,7 +207,7 @@ test('psychological engineering adapts triggers and priority based on gender', (
 });
 
 test('validateUsername enforces strict Instagram handle syntax', async () => {
-  const { validateUsername } = await import('../api/lib/apifyBackendService.ts');
+  const { validateUsername } = await import('../src/services/apifyInstagramService.ts');
   
   assert.equal(validateUsername('@neymarjr').valid, true);
   assert.equal(validateUsername('@neymarjr').clean, 'neymarjr');
@@ -220,7 +220,7 @@ test('validateUsername enforces strict Instagram handle syntax', async () => {
 });
 
 test('getApifyToken detects missing token or invalid Stripe keys securely', async () => {
-  const { getApifyToken } = await import('../api/lib/apifyBackendService.ts');
+  const { getApifyToken } = await import('../src/services/apifyInstagramService.ts');
   
   const original = process.env.APIFY_API_TOKEN;
   try {
