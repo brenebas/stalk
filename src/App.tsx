@@ -77,6 +77,14 @@ export default function App() {
       
       if (response.ok) {
         const liveData: InstagramProfile = await response.json();
+
+        // O perfil não pode ser privado - o sistema só funciona para perfis públicos abertos
+        if (liveData.isPrivate) {
+          setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
+          setIsSearchingProfile(false);
+          return;
+        }
+
         const liveMetrics = generateScanMetrics(
           liveData.handle,
           liveData.followersCount,
@@ -105,20 +113,17 @@ export default function App() {
           .catch((err) => console.warn('Conexões Apify background info:', err));
       } else {
         const errJson = await response.json().catch(() => ({}));
+        
+        // Apenas se o perfil realmente não existir no Instagram
         if (response.status === 404 || errJson.code === 'NOT_FOUND' || errJson.code === 'PROFILE_NOT_FOUND') {
-          setSearchError('Esse perfil não existe ou não foi encontrado no Instagram. Por favor, coloque um perfil válido.');
-        } else if (response.status === 401 || errJson.code === 'UNAUTHORIZED' || errJson.code === 'TOKEN_MISSING') {
-          setSearchError(errJson.error || 'Autenticação da Apify pendente. Verifique a chave APIFY_API_TOKEN na Vercel.');
-        } else if (response.status === 504 || errJson.code === 'TIMEOUT') {
-          setSearchError('A consulta excedeu o tempo limite da rede. Verifique sua conexão e tente novamente.');
-        } else if (response.status === 429 || response.status === 403) {
-          setSearchError(errJson.error || 'Limite de requisições ou cota da Apify atingido. Tente novamente mais tarde.');
+          setSearchError('Esse perfil não existe no Instagram. Por favor, digite um perfil válido.');
         } else {
-          setSearchError(errJson.error || 'Erro ao consultar perfil no Instagram. Verifique o @ digitado.');
+          // Em qualquer outro caso (perfil privado ou inacessível):
+          setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
         }
       }
     } catch {
-      setSearchError('Falha na comunicação com o servidor. Verifique sua conexão e tente novamente.');
+      setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
     } finally {
       setIsSearchingProfile(false);
     }
@@ -203,7 +208,6 @@ export default function App() {
           <div className="animate-in fade-in duration-200">
             <StepInput
               onSubmitHandle={handleSubmitHandle}
-              onStartDemo={handleStartDemo}
               isLoading={isSearchingProfile}
               errorMessage={searchError}
               onClearError={() => setSearchError('')}

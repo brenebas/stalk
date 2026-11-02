@@ -72,6 +72,14 @@ app.get('/api/instagram/profile', async (req, res) => {
     const forceRefresh = req.query.refresh === 'true' || req.query.nocache === 'true';
 
     const profileData = await fetchInstagramProfile(rawUsername, forceRefresh);
+    if (profileData.isPrivate) {
+      return res.status(403).json({
+        error: 'Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.',
+        code: 'PRIVATE_PROFILE',
+        isPrivate: true,
+        isRealData: true,
+      });
+    }
     return res.json(profileData);
   } catch (error: any) {
     const statusCode = error?.statusCode || 500;

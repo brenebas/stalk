@@ -230,12 +230,21 @@ export default async function handler(req: any, res: any) {
       followingCount,
       postsCount,
       isVerified: Boolean(item.verified),
-      isPrivate: Boolean(item.private),
+      isPrivate: Boolean(item.private || item.isPrivate || item.is_private),
       category: item.businessCategoryName || (item.private ? 'Conta Privada' : 'Perfil Público'),
       externalUrl: item.externalUrl || null,
       isRealData: true,
       isDemo: false,
     };
+
+    if (profile.isPrivate) {
+      return res.status(403).json({
+        error: 'Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.',
+        code: 'PRIVATE_PROFILE',
+        isPrivate: true,
+        isRealData: true,
+      });
+    }
 
     profileCache.set(username, { profile, timestamp: Date.now() });
     return res.status(200).json(profile);

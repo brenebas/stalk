@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Radar, Loader2 } from 'lucide-react';
+import { Radar, Loader2, ShieldAlert } from 'lucide-react';
 import { soundFX } from '../utils/audio';
 
 interface StepInputProps {
@@ -28,7 +28,7 @@ export const StepInput: React.FC<StepInputProps> = ({
 
     const clean = handleInput.replace(/^@/, '').trim();
     if (!clean) {
-      setLocalErrorMsg('Esse perfil não existe, por favor coloque um perfil válido');
+      setLocalErrorMsg('Por favor, digite um perfil válido.');
       return;
     }
     soundFX.playTick();
@@ -81,19 +81,11 @@ export const StepInput: React.FC<StepInputProps> = ({
               />
             </div>
             {activeError && (
-              <div className="space-y-1.5 mt-2">
-                <p className="text-rose-600 text-xs font-medium">
+              <div className="mt-3 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/90 flex items-start gap-2.5 text-rose-800 text-xs shadow-sm">
+                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed font-semibold">
                   {activeError}
-                </p>
-                {onStartDemo && (
-                  <button
-                    type="button"
-                    onClick={() => onStartDemo(handleInput)}
-                    className="text-xs text-neutral-500 hover:text-neutral-800 underline transition-colors cursor-pointer block text-left"
-                  >
-                    Deseja visualizar em Modo Demonstração (Simulado)?
-                  </button>
-                )}
+                </div>
               </div>
             )}
           </div>
