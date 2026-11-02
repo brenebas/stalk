@@ -12,7 +12,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const rawUrl = 
+    let rawUrl = 
       (req.query?.url as string) || 
       (req.url ? new URL(req.url, 'http://localhost').searchParams.get('url') : '') || 
       '';
@@ -21,9 +21,36 @@ export default async function handler(req: any, res: any) {
       return res.status(400).send('URL não informada');
     }
 
-    const parsed = new URL(rawUrl);
-    const validDomains = ['cdninstagram.com', 'fbcdn.net', 'instagram.com', 'fbsbx.com'];
-    const isDomainAllowed = validDomains.some((d) => parsed.hostname.endsWith(d));
+    // Unwrap if double-encoded or multiple proxy prefixes exist
+    while (rawUrl.includes('/api/proxy-image?url=') || rawUrl.includes('api/proxy-image?url=')) {
+      const idx = rawUrl.indexOf('proxy-image?url=');
+      rawUrl = decodeURIComponent(rawUrl.slice(idx + 'proxy-image?url='.length));
+    }
+
+    rawUrl = rawUrl.replace(/&amp;/g, '&');
+
+    let parsed: URL;
+    try {
+      parsed = new URL(rawUrl);
+    } catch {
+      return res.status(400).send('URL inválida');
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    const validDomains = [
+      'cdninstagram.com',
+      'fbcdn.net',
+      'instagram.com',
+      'fbsbx.com',
+      'facebook.com',
+      'akamaihd.net',
+    ];
+
+    const isDomainAllowed =
+      validDomains.some((d) => hostname.endsWith(d)) ||
+      hostname.includes('cdninstagram') ||
+      hostname.includes('fbcdn') ||
+      hostname.includes('instagram');
 
     if (!isDomainAllowed) {
       return res.status(403).send('Domínio não permitido');
@@ -44,7 +71,7 @@ export default async function handler(req: any, res: any) {
 
     const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800');
 
     const arrayBuffer = await imageRes.arrayBuffer();
     return res.send(Buffer.from(arrayBuffer));

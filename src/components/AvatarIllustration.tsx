@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface AvatarIllustrationProps {
   seed: string;
@@ -21,6 +21,10 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
   hasStoryRing = false,
 }) => {
   const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [avatarUrl]);
 
   const sizeMap = {
     sm: 'w-10 h-10 text-xs',
@@ -45,11 +49,24 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
   for (let i = 0; i < safeSeed.length; i++) sum += safeSeed.charCodeAt(i);
   const palette = palettes[sum % palettes.length];
 
-  // If avatarUrl is from Instagram CDN, route through our server proxy to avoid 403 Forbidden
-  const proxyAvatarUrl = avatarUrl && (avatarUrl.includes('cdninstagram.com') || avatarUrl.includes('fbcdn.net'))
-    ? `/api/proxy-image?url=${encodeURIComponent(avatarUrl)}`
-    : avatarUrl;
+  // Resolve proxy URL safely without double-wrapping
+  const resolveAvatarUrl = (url?: string): string => {
+    if (!url) return '';
+    if (url.startsWith('/api/proxy-image')) {
+      return url;
+    }
+    if (
+      url.includes('cdninstagram.com') ||
+      url.includes('fbcdn.net') ||
+      url.includes('fbsbx.com') ||
+      url.includes('instagram.com')
+    ) {
+      return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  };
 
+  const proxyAvatarUrl = resolveAvatarUrl(avatarUrl);
   const hasRealPhoto = Boolean(proxyAvatarUrl && !imgFailed);
 
   return (
@@ -73,6 +90,8 @@ export const AvatarIllustration: React.FC<AvatarIllustrationProps> = ({
             <img
               src={proxyAvatarUrl}
               alt={name}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               onError={() => setImgFailed(true)}
               className={`w-full h-full object-cover rounded-full transition-all duration-300 ${
                 isBlurred ? 'filter blur-[1.5px] scale-105' : ''
