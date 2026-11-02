@@ -62,16 +62,18 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
     }, 3300);
   };
   // Format numbers in Portuguese matching Instagram standards (e.g. 79, 10,3 mi, 910)
-  const formatInstagramCount = (num: number) => {
-    if (num >= 1000000) {
-      const val = (num / 1000000).toFixed(1).replace('.', ',');
+  const formatInstagramCount = (rawNum?: number | string | null) => {
+    const num = Number(rawNum);
+    const validNum = !isNaN(num) && isFinite(num) && num >= 0 ? num : 0;
+    if (validNum >= 1000000) {
+      const val = (validNum / 1000000).toFixed(1).replace('.', ',');
       return `${val.endsWith(',0') ? val.slice(0, -2) : val} mi`;
     }
-    if (num >= 10000) {
-      const val = (num / 1000).toFixed(1).replace('.', ',');
+    if (validNum >= 10000) {
+      const val = (validNum / 1000).toFixed(1).replace('.', ',');
       return `${val.endsWith(',0') ? val.slice(0, -2) : val} mil`;
     }
-    return num.toLocaleString('pt-BR');
+    return validNum.toLocaleString('pt-BR');
   };
 
   const safeProfile = profile || {
@@ -94,6 +96,11 @@ export const StepConfirmProfile: React.FC<StepConfirmProfileProps> = ({
     <div className="w-full max-w-md mx-auto space-y-4">
       {/* Top Header Confirmation Prompt */}
       <div className="text-center px-2">
+        {safeProfile.isDemo && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-2">
+            <span>Modo Demonstração (Simulado)</span>
+          </div>
+        )}
         <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
           Essa conta é sua?
         </h2>

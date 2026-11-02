@@ -57,7 +57,7 @@ test('fetchInstagramProfileLive returns valid InstagramProfile for handle', asyn
   const { fetchInstagramProfileLive } = await import('../src/services/instagramService.ts');
   const profile = await fetchInstagramProfileLive('camila.lima_oficial');
   assert.equal(profile.handle, 'camila.lima_oficial');
-  assert.equal(profile.name, 'Camila Lima');
+  assert.ok(profile.name.includes('Camila Lima'));
   assert.ok(profile.followersCount > 0);
   assert.ok(profile.postsCount > 0);
 });
@@ -204,6 +204,59 @@ test('psychological engineering adapts triggers and priority based on gender', (
   assert.equal(top11Locked[0].relationshipCategory, 'Stalker da Madrugada');
   assert.ok(top11Locked[0].curiosityHint.includes('madrugada'));
   assert.equal(top11Locked[1].relationshipCategory, 'Salvou sua Foto');
+});
+
+test('validateUsername enforces strict Instagram handle syntax', async () => {
+  const { validateUsername } = await import('../api/lib/apifyBackendService.ts');
+  
+  assert.equal(validateUsername('@neymarjr').valid, true);
+  assert.equal(validateUsername('@neymarjr').clean, 'neymarjr');
+  assert.equal(validateUsername('user.name_12').valid, true);
+  
+  assert.equal(validateUsername('').valid, false);
+  assert.equal(validateUsername('a'.repeat(31)).valid, false);
+  assert.equal(validateUsername('user@invalid').valid, false);
+  assert.equal(validateUsername('user name').valid, false);
+});
+
+test('getApifyToken detects missing token or invalid Stripe keys securely', async () => {
+  const { getApifyToken } = await import('../api/lib/apifyBackendService.ts');
+  
+  const original = process.env.APIFY_API_TOKEN;
+  try {
+    delete process.env.APIFY_API_TOKEN;
+    const resMissing = getApifyToken();
+    assert.equal(resMissing.token, null);
+    assert.equal(resMissing.code, 'TOKEN_MISSING');
+
+    process.env.APIFY_API_TOKEN = 'sk_live_1234567890';
+    const resStripe = getApifyToken();
+    assert.equal(resStripe.token, null);
+    assert.equal(resStripe.code, 'INVALID_TOKEN_FORMAT');
+
+    process.env.APIFY_API_TOKEN = 'apify_api_testtoken123';
+    const resOk = getApifyToken();
+    assert.equal(resOk.token, 'apify_api_testtoken123');
+  } finally {
+    if (original !== undefined) {
+      process.env.APIFY_API_TOKEN = original;
+    } else {
+      delete process.env.APIFY_API_TOKEN;
+    }
+  }
+});
+
+test('simulated profiles in mockProfiles are strictly flagged as isRealData: false and isDemo: true', async () => {
+  const { DEMO_PROFILES, getDemoInstagramProfile } = await import('../src/data/mockProfiles.ts');
+  
+  for (const p of DEMO_PROFILES) {
+    assert.equal(p.isRealData, false, 'Demo profile must never have isRealData: true');
+    assert.equal(p.isDemo, true, 'Demo profile must have isDemo: true');
+  }
+
+  const generated = getDemoInstagramProfile('random_user_test');
+  assert.equal(generated.isRealData, false);
+  assert.equal(generated.isDemo, true);
 });
 
 

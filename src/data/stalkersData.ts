@@ -671,8 +671,24 @@ export function generateStalkersList(
     baseList.push(...reordered);
   }
 
+  const sanitizeStalkerMetrics = (list: StalkerVisitor[]): StalkerVisitor[] => {
+    return list.map((stalker, idx) => ({
+      ...stalker,
+      postsCount: typeof stalker.postsCount === 'number' && !isNaN(stalker.postsCount) && stalker.postsCount >= 0
+        ? stalker.postsCount
+        : (stalker.isPrivate ? 0 : 3),
+      followersCount: typeof stalker.followersCount === 'number' && !isNaN(stalker.followersCount) && stalker.followersCount >= 0
+        ? stalker.followersCount
+        : (stalker.isPrivate ? 140 + (idx * 23 % 300) : 420 + (idx * 47 % 500)),
+      followingCount: typeof stalker.followingCount === 'number' && !isNaN(stalker.followingCount) && stalker.followingCount >= 0
+        ? stalker.followingCount
+        : (stalker.isPrivate ? 130 + (idx * 19 % 200) : 310 + (idx * 31 % 300)),
+    }));
+  };
+
   if (!targetCount || targetCount <= baseList.length) {
-    return targetCount ? baseList.slice(0, Math.max(2, targetCount)) : baseList;
+    const chosen = targetCount ? baseList.slice(0, Math.max(2, targetCount)) : baseList;
+    return sanitizeStalkerMetrics(chosen);
   }
 
   // Capped to a safe, performance-optimized maximum of 24 top suspect cards
@@ -681,9 +697,6 @@ export function generateStalkersList(
   const safeTarget = Math.min(targetCount, MAX_CARDS);
   const extraCount = Math.max(0, safeTarget - baseList.length);
 
-  if (extraCount === 0) {
-    return baseList;
-  }
 
   const extraPool = [
     { first: 'Felipe', last: 'Rocha', gender: 'male' as const, handle: 'felipe_rocha94', cat: 'Stalker Noturno' as const, hint: 'Acessou seu perfil repetidas vezes durante a madrugada.' },
@@ -757,11 +770,26 @@ export function generateStalkersList(
       relationshipCategory: item.cat,
       curiosityHint: item.hint,
       suspicionScore: 80 + (i % 18),
-      commonFriendsCount: extraFriends
+      commonFriendsCount: extraFriends,
+      postsCount: 0,
+      followersCount: 140 + (i * 23 % 300),
+      followingCount: 130 + (i * 19 % 200),
     });
   }
 
-  return [...baseList, ...extraList];
+  const fullList = [...baseList, ...extraList];
+  return fullList.map((stalker, idx) => ({
+    ...stalker,
+    postsCount: typeof stalker.postsCount === 'number' && !isNaN(stalker.postsCount) && stalker.postsCount >= 0
+      ? stalker.postsCount
+      : (stalker.isPrivate ? 0 : 3),
+    followersCount: typeof stalker.followersCount === 'number' && !isNaN(stalker.followersCount) && stalker.followersCount >= 0
+      ? stalker.followersCount
+      : (stalker.isPrivate ? 140 + (idx * 23 % 300) : 420 + (idx * 47 % 500)),
+    followingCount: typeof stalker.followingCount === 'number' && !isNaN(stalker.followingCount) && stalker.followingCount >= 0
+      ? stalker.followingCount
+      : (stalker.isPrivate ? 130 + (idx * 19 % 200) : 310 + (idx * 31 % 300)),
+  }));
 }
 
 /**

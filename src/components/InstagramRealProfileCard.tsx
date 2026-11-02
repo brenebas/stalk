@@ -104,15 +104,20 @@ export const InstagramRealProfileCard: React.FC<InstagramRealProfileCardProps> =
     ? resolveAvatar(stalker.avatarUrl)
     : defaultAvatar;
 
-  const postsCount = stalker.postsCount;
-  const followersCount = stalker.followersCount;
-  const followingCount = stalker.followingCount;
+  const parsedPosts = Number(stalker.postsCount);
+  const postsCount = !isNaN(parsedPosts) && isFinite(parsedPosts) && parsedPosts >= 0 ? parsedPosts : (isPrivate ? 0 : 3);
+  const parsedFollowers = Number(stalker.followersCount);
+  const followersCount = !isNaN(parsedFollowers) && isFinite(parsedFollowers) && parsedFollowers >= 0 ? parsedFollowers : (isPrivate ? 141 : 428);
+  const parsedFollowing = Number(stalker.followingCount);
+  const followingCount = !isNaN(parsedFollowing) && isFinite(parsedFollowing) && parsedFollowing >= 0 ? parsedFollowing : (isPrivate ? 133 : 312);
+
   const bio = stalker.bio !== undefined
     ? stalker.bio
     : (isPrivate ? '⚡ Engenharia & Lifestyle 📍 RJ' : '✨ Vivendo um dia de cada vez 📍 SP');
 
-  const formatCount = (count?: number, fallback: number = 0) => {
-    const n = typeof count === 'number' ? count : fallback;
+  const formatCount = (count?: number | string | null, fallback: number = 0) => {
+    const rawNum = Number(count);
+    const n = !isNaN(rawNum) && isFinite(rawNum) && rawNum >= 0 ? rawNum : fallback;
     if (n >= 1_000_000) {
       return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
     }

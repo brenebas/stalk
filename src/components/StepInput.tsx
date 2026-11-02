@@ -4,6 +4,7 @@ import { soundFX } from '../utils/audio';
 
 interface StepInputProps {
   onSubmitHandle: (handle: string) => void;
+  onStartDemo?: (handle?: string) => void;
   isLoading?: boolean;
   errorMessage?: string;
   onClearError?: () => void;
@@ -11,6 +12,7 @@ interface StepInputProps {
 
 export const StepInput: React.FC<StepInputProps> = ({
   onSubmitHandle,
+  onStartDemo,
   isLoading = false,
   errorMessage = '',
   onClearError,
@@ -79,9 +81,20 @@ export const StepInput: React.FC<StepInputProps> = ({
               />
             </div>
             {activeError && (
-              <p className="text-rose-600 text-xs mt-1.5 font-medium">
-                {activeError}
-              </p>
+              <div className="space-y-1.5 mt-2">
+                <p className="text-rose-600 text-xs font-medium">
+                  {activeError}
+                </p>
+                {onStartDemo && (
+                  <button
+                    type="button"
+                    onClick={() => onStartDemo(handleInput)}
+                    className="text-xs text-neutral-500 hover:text-neutral-800 underline transition-colors cursor-pointer block text-left"
+                  >
+                    Deseja visualizar em Modo Demonstração (Simulado)?
+                  </button>
+                )}
+              </div>
             )}
           </div>
 

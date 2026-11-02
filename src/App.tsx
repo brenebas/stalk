@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FunnelStep, InstagramProfile, ScanMetrics, StalkerVisitor, RealInstagramConnection } from './types';
-import { PRESET_ACCOUNTS, getOrCreateInstagramProfile } from './data/mockProfiles';
+import { DEMO_PROFILES, getDemoInstagramProfile } from './data/mockProfiles';
 import { generateScanMetrics, generateStalkersList, applyRealConnectionsToStalkers } from './data/stalkersData';
 import { Navbar } from './components/Navbar';
 import { StepInput } from './components/StepInput';
@@ -15,13 +15,13 @@ import { detectGender } from './utils/genderDetector';
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<FunnelStep>('input');
-  const [currentProfile, setCurrentProfile] = useState<InstagramProfile>(PRESET_ACCOUNTS[0]);
+  const [currentProfile, setCurrentProfile] = useState<InstagramProfile>(DEMO_PROFILES[0]);
   const initialMetrics = generateScanMetrics(
-    PRESET_ACCOUNTS[0].handle,
-    PRESET_ACCOUNTS[0].followersCount,
-    PRESET_ACCOUNTS[0].isPrivate
+    DEMO_PROFILES[0].handle,
+    DEMO_PROFILES[0].followersCount,
+    DEMO_PROFILES[0].isPrivate
   );
-  const initialGender = detectGender(PRESET_ACCOUNTS[0].name, PRESET_ACCOUNTS[0].bio, PRESET_ACCOUNTS[0].handle);
+  const initialGender = detectGender(DEMO_PROFILES[0].name, DEMO_PROFILES[0].bio, DEMO_PROFILES[0].handle);
   const [metrics, setMetrics] = useState<ScanMetrics>(initialMetrics);
   const [stalkers, setStalkers] = useState<StalkerVisitor[]>(generateStalkersList(false, initialMetrics.visitorsToday, initialGender));
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -32,9 +32,9 @@ export default function App() {
   const [isSearchingProfile, setIsSearchingProfile] = useState(false);
   const [searchError, setSearchError] = useState('');
 
-  // Auto-fetch real connections whenever profile changes or is mounted
+  // Auto-fetch real connections whenever a real profile changes
   useEffect(() => {
-    if (currentProfile?.handle) {
+    if (currentProfile?.handle && currentProfile.isRealData) {
       const userGender = detectGender(currentProfile.name, currentProfile.bio, currentProfile.handle);
       const thirdHandle = APP_CONFIG.getThirdProfileHandle(userGender);
       fetch(`/api/instagram/connections?username=${encodeURIComponent(currentProfile.handle)}&thirdProfile=${encodeURIComponent(thirdHandle)}&gender=${userGender}`)
@@ -45,9 +45,9 @@ export default function App() {
             setStalkers((current) => applyRealConnectionsToStalkers(current, data.connections, currentProfile));
           }
         })
-        .catch((err) => console.warn('Conexões Apify background effect info:', err));
+        .catch((err) => console.warn('Conexões Apify background info:', err));
     }
-  }, [currentProfile?.handle]);
+  }, [currentProfile?.handle, currentProfile?.isRealData]);
 
   // Handlers
   const handleSubmitHandle = async (rawHandle: string) => {
@@ -78,7 +78,7 @@ export default function App() {
         setCurrentStep('confirm_profile');
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Puxa as conexões reais (quem o perfil segue e seguidores) via Apify para os perfis gratuitos
+        // Puxa conexões reais da Apify em segundo plano para compor os perfis gratuitos
         fetch(`/api/instagram/connections?username=${encodeURIComponent(clean)}&thirdProfile=${encodeURIComponent(thirdHandle)}&gender=${userGender}`)
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
@@ -88,47 +88,43 @@ export default function App() {
             }
           })
           .catch((err) => console.warn('Conexões Apify background info:', err));
-      } else if (response.status === 404) {
-        setSearchError('Esse perfil não existe, por favor coloque um perfil válido');
       } else {
-        // Fallback resiliente caso o servidor retorne status de indisponibilidade
-        const fallbackData = getOrCreateInstagramProfile(clean);
-        const fallbackMetrics = generateScanMetrics(
-          fallbackData.handle,
-          fallbackData.followersCount,
-          fallbackData.isPrivate
-        );
-        const fallbackGender = detectGender(fallbackData.name, fallbackData.bio, fallbackData.handle);
-        setCurrentProfile(fallbackData);
-        setMetrics(fallbackMetrics);
-        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday, fallbackGender));
-        setIsUnlocked(false);
-        setSearchError('');
-        setCurrentStep('confirm_profile');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const errJson = await response.json().catch(() => ({}));
+        if (response.status === 404 || errJson.code === 'NOT_FOUND' || errJson.code === 'PROFILE_NOT_FOUND') {
+          setSearchError('Esse perfil não existe ou não foi encontrado no Instagram. Por favor, coloque um perfil válido.');
+        } else if (response.status === 401 || errJson.code === 'UNAUTHORIZED' || errJson.code === 'TOKEN_MISSING') {
+          setSearchError(errJson.error || 'Autenticação da Apify pendente. Verifique a chave APIFY_API_TOKEN na Vercel.');
+        } else if (response.status === 504 || errJson.code === 'TIMEOUT') {
+          setSearchError('A consulta excedeu o tempo limite da rede. Verifique sua conexão e tente novamente.');
+        } else if (response.status === 429 || response.status === 403) {
+          setSearchError(errJson.error || 'Limite de requisições ou cota da Apify atingido. Tente novamente mais tarde.');
+        } else {
+          setSearchError(errJson.error || 'Erro ao consultar perfil no Instagram. Verifique o @ digitado.');
+        }
       }
-    } catch (err: any) {
-      try {
-        const fallbackData = getOrCreateInstagramProfile(clean);
-        const fallbackMetrics = generateScanMetrics(
-          fallbackData.handle,
-          fallbackData.followersCount,
-          fallbackData.isPrivate
-        );
-        const fallbackGender = detectGender(fallbackData.name, fallbackData.bio, fallbackData.handle);
-        setCurrentProfile(fallbackData);
-        setMetrics(fallbackMetrics);
-        setStalkers(generateStalkersList(false, fallbackMetrics.visitorsToday, fallbackGender));
-        setIsUnlocked(false);
-        setSearchError('');
-        setCurrentStep('confirm_profile');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch {
-        setSearchError('Esse perfil não existe, por favor coloque um perfil válido');
-      }
+    } catch {
+      setSearchError('Falha na comunicação com o servidor. Verifique sua conexão e tente novamente.');
     } finally {
       setIsSearchingProfile(false);
     }
+  };
+
+  const handleStartDemo = (rawHandle?: string) => {
+    const clean = (rawHandle || 'demo.lifestyle').replace(/^@/, '').trim() || 'demo.lifestyle';
+    const demoData = getDemoInstagramProfile(clean);
+    const demoMetrics = generateScanMetrics(
+      demoData.handle,
+      demoData.followersCount,
+      demoData.isPrivate
+    );
+    const demoGender = detectGender(demoData.name, demoData.bio, demoData.handle);
+    setCurrentProfile(demoData);
+    setMetrics(demoMetrics);
+    setStalkers(generateStalkersList(false, demoMetrics.visitorsToday, demoGender));
+    setIsUnlocked(false);
+    setSearchError('');
+    setCurrentStep('confirm_profile');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleConfirmProfile = () => {
@@ -192,6 +188,7 @@ export default function App() {
           <div className="animate-in fade-in duration-200">
             <StepInput
               onSubmitHandle={handleSubmitHandle}
+              onStartDemo={handleStartDemo}
               isLoading={isSearchingProfile}
               errorMessage={searchError}
               onClearError={() => setSearchError('')}
@@ -241,8 +238,6 @@ export default function App() {
         profile={currentProfile}
         onSuccessUnlock={handleUnlockSuccess}
       />
-
-
 
       {/* Minimal App Footer */}
       <Footer />

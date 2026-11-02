@@ -23,6 +23,7 @@ export interface InstagramProfile {
   category: string;
   externalUrl?: string | null;
   isRealData?: boolean;
+  isDemo?: boolean;
 }
 
 export interface ScanMetrics {

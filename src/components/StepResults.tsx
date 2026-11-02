@@ -357,9 +357,16 @@ export const StepResults: React.FC<StepResultsProps> = ({
                   <InstagramVerifiedBadge className="w-4 h-4" />
                 )}
               </div>
-              <p className="text-xs text-neutral-500 mt-0.5">
-                Dossiê compilado · <span className="text-emerald-600 font-semibold">{totalDetectedProfiles.toLocaleString('pt-BR')} perfis detectados</span>
-              </p>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <p className="text-xs text-neutral-500">
+                  Radar Comportamental · <span className="text-emerald-600 font-semibold">{totalDetectedProfiles.toLocaleString('pt-BR')} interações estimadas</span>
+                </p>
+                {safeProfile.isDemo && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
+                    Modo Demonstração (Simulado)
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

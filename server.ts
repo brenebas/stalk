@@ -2,12 +2,16 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { 
-  fetchInstagramProfileApify, 
-  fetchInstagramConnectionsApify, 
-  ApifyError, 
-  clearApifyCache 
-} from './src/services/apifyInstagramService';
+import {
+  fetchInstagramProfile,
+  fetchInstagramConnections,
+  startActorRun,
+  getActorRunStatus,
+  getDatasetItems,
+  validateUsername,
+  clearBackendCache,
+  ApifyBackendError,
+} from './api/lib/apifyBackendService';
 
 dotenv.config();
 
@@ -17,7 +21,7 @@ const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 
-// Anti-cache middleware: ensure HTML documents, JS modules, and API responses are never cached stale
+// Anti-cache middleware
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/proxy-image')) {
     return next();
@@ -30,18 +34,19 @@ app.use((req, res, next) => {
 
 // Endpoint to force-clear server-side memory cache
 app.post('/api/clear-cache', (_req, res) => {
-  clearApifyCache();
+  clearBackendCache();
   return res.json({ success: true, message: 'Cache limpo com sucesso.' });
 });
 
-// Endpoint to check token status
+// Endpoint to check token status securely without credential leakage
 app.get('/api/token-status', (_req, res) => {
-  const rawToken = (process.env.APIFY_API_TOKEN || process.env.VITE_APIFY_API_TOKEN || '').trim().replace(/^['"]|['"]$/g, '');
+  const rawToken = (process.env.APIFY_API_TOKEN || '').trim().replace(/^['"]|['"]$/g, '');
 
   if (!rawToken) {
     return res.json({
       configured: false,
-      message: 'Nenhum token encontrado em APIFY_API_TOKEN ou VITE_APIFY_API_TOKEN.',
+      status: 'Nenhum token encontrado na variável de ambiente APIFY_API_TOKEN do servidor.',
+      tip: 'Configure APIFY_API_TOKEN no arquivo .env ou no painel da Vercel.',
     });
   }
 
@@ -50,115 +55,119 @@ app.get('/api/token-status', (_req, res) => {
 
   return res.json({
     configured: true,
-    maskedToken: rawToken.slice(0, 10) + '...' + rawToken.slice(-4),
-    tokenLength: rawToken.length,
     isApifyFormat: isApify,
     isStripeKey: isStripe,
     status: isApify
-      ? 'OK: Token da Apify válido e configurado.'
+      ? 'OK: Token da Apify configurado com sucesso no servidor.'
       : isStripe
-      ? 'ERRO: Esta é uma chave da Stripe (sk_live_...) e não da Apify. Obtenha o token em console.apify.com/account/integrations'
-      : 'ATENÇÃO: O token configurado não começa com apify_api_. Verifique em console.apify.com/account/integrations',
+      ? 'ERRO: A credencial configurada é uma chave da Stripe e não da Apify.'
+      : 'ATENÇÃO: O token configurado não começa com o prefixo padrão apify_api_.',
   });
 });
 
 // API: Official Apify Instagram Profile endpoint: GET /api/instagram/profile?username=
 app.get('/api/instagram/profile', async (req, res) => {
   try {
-    const username = (req.query.username as string) || '';
+    const rawUsername = (req.query.username as string) || '';
     const forceRefresh = req.query.refresh === 'true' || req.query.nocache === 'true';
 
-    if (!username.trim()) {
-      return res.status(400).json({
-        error: 'O parâmetro username é obrigatório.',
-        code: 'MISSING_USERNAME',
-      });
-    }
-
-    const profileData = await fetchInstagramProfileApify(username, forceRefresh);
+    const profileData = await fetchInstagramProfile(rawUsername, forceRefresh);
     return res.json(profileData);
   } catch (error: any) {
-    if (error instanceof ApifyError) {
-      if (error.statusCode === 403 || error.code === 'APIFY_API_ERROR' || error.statusCode === 429) {
-        try {
-          const { fetchInstagramProfileLive } = await import('./src/services/instagramService');
-          const fallback = await fetchInstagramProfileLive(req.query.username as string);
-          return res.json(fallback);
-        } catch {}
-      }
+    if (error instanceof ApifyBackendError) {
       return res.status(error.statusCode).json({
         error: error.message,
         code: error.code,
+        isRealData: false,
       });
     }
-    try {
-      const { fetchInstagramProfileLive } = await import('./src/services/instagramService');
-      const fallback = await fetchInstagramProfileLive(req.query.username as string);
-      return res.json(fallback);
-    } catch {}
+
     return res.status(500).json({
       error: 'Erro interno ao consultar perfil do Instagram.',
       code: 'INTERNAL_ERROR',
-      message: error?.message || 'Erro desconhecido',
+      isRealData: false,
     });
   }
 });
 
-// API: Get real connections (following & followers) using Apify
+// API: Get real connections (followers/following) using Apify
 app.get('/api/instagram/connections', async (req, res) => {
   try {
-    const username = (req.query.username as string) || '';
-    const thirdProfile = (req.query.thirdProfile as string) || '';
-    const gender = (req.query.gender as 'female' | 'male') || undefined;
-    if (!username.trim()) {
-      return res.status(400).json({
-        error: 'O parâmetro username é obrigatório.',
-        code: 'MISSING_USERNAME',
-      });
-    }
+    const rawUsername = (req.query.username as string) || '';
+    const forceRefresh = req.query.refresh === 'true';
 
-    const connections = await fetchInstagramConnectionsApify(username, false, thirdProfile, gender);
-    return res.json({ connections });
+    const result = await fetchInstagramConnections(rawUsername, forceRefresh);
+    return res.json(result);
   } catch (error: any) {
-    if (error?.name !== 'AbortError') {
-      console.error('Erro ao buscar conexões reais do Instagram:', error);
-    }
-    return res.status(200).json({
-      connections: [],
-    });
-  }
-});
-
-// Backward-compatible alias: GET /api/instagram/:handle
-app.get('/api/instagram/:handle', async (req, res) => {
-  try {
-    const handle = req.params.handle;
-    if (!handle) {
-      return res.status(400).json({
-        error: 'Handle é obrigatório',
-        code: 'MISSING_USERNAME',
-      });
-    }
-
-    const profileData = await fetchInstagramProfileApify(handle);
-    return res.json(profileData);
-  } catch (error: any) {
-    if (error instanceof ApifyError) {
+    if (error instanceof ApifyBackendError) {
       return res.status(error.statusCode).json({
         error: error.message,
         code: error.code,
+        connections: [],
+        isRealData: false,
       });
     }
-    console.error('Erro ao buscar perfil do Instagram:', error);
+
     return res.status(500).json({
-      error: 'Falha ao buscar perfil do Instagram',
+      error: 'Erro ao consultar conexões do Instagram.',
       code: 'INTERNAL_ERROR',
-      message: error?.message || 'Erro desconhecido',
+      connections: [],
+      isRealData: false,
     });
   }
 });
 
-// API: Proxy Instagram CDN images to prevent HTTP 403 Forbidden from hotlinking protection
+// API: Asynchronous Actor Job handler (start and check status)
+app.get('/api/instagram/job', async (req, res) => {
+  try {
+    const runId = (req.query.runId as string) || '';
+    if (!runId) {
+      return res.status(400).json({ error: 'Parâmetro runId é obrigatório.', code: 'MISSING_RUN_ID' });
+    }
+
+    const status = await getActorRunStatus(runId);
+    let items: any[] = [];
+    if (status.isSuccess && status.defaultDatasetId) {
+      items = await getDatasetItems(status.defaultDatasetId, 20);
+    }
+
+    return res.json({ ...status, items });
+  } catch (error: any) {
+    if (error instanceof ApifyBackendError) {
+      return res.status(error.statusCode).json({ error: error.message, code: error.code });
+    }
+    return res.status(500).json({ error: 'Erro ao verificar execução assíncrona.' });
+  }
+});
+
+app.post('/api/instagram/job', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const type = body.type || 'profile';
+    const validation = validateUsername(body.username || '');
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error, code: 'INVALID_USERNAME' });
+    }
+
+    const actorId = type === 'connections'
+      ? 'apify/instagram-followers-following-scraper'
+      : 'apify/instagram-profile-scraper';
+
+    const input = type === 'connections'
+      ? { account: [validation.clean], dataToScrape: 'Followers', resultsLimit: 12 }
+      : { usernames: [validation.clean], includeAboutSection: false };
+
+    const run = await startActorRun(actorId, input);
+    return res.status(202).json({ message: 'Execução assíncrona iniciada.', ...run });
+  } catch (error: any) {
+    if (error instanceof ApifyBackendError) {
+      return res.status(error.statusCode).json({ error: error.message, code: error.code });
+    }
+    return res.status(500).json({ error: 'Erro ao iniciar execução assíncrona.' });
+  }
+});
+
+// API: Proxy Instagram CDN images
 app.get('/api/proxy-image', async (req, res) => {
   try {
     let imageUrl = req.query.url as string;
@@ -166,19 +175,16 @@ app.get('/api/proxy-image', async (req, res) => {
       return res.status(400).send('URL não informada');
     }
 
-    // Unwrap if accidentally double-proxied or nested
     while (imageUrl.includes('/api/proxy-image?url=')) {
       const idx = imageUrl.indexOf('/api/proxy-image?url=');
       imageUrl = decodeURIComponent(imageUrl.slice(idx + '/api/proxy-image?url='.length));
     }
 
-    // Clean up HTML entities in signed CDN query parameters
     imageUrl = imageUrl.replace(/&amp;/g, '&');
 
-    // Safety check: only proxy legitimate image domains
     const parsed = new URL(imageUrl);
     const validDomains = ['cdninstagram.com', 'fbcdn.net', 'instagram.com', 'fbsbx.com', 'facebook.com', 'akamaihd.net'];
-    const isDomainAllowed = validDomains.some(d => parsed.hostname.endsWith(d)) || parsed.hostname.includes('cdninstagram') || parsed.hostname.includes('fbcdn');
+    const isDomainAllowed = validDomains.some((d) => parsed.hostname.endsWith(d)) || parsed.hostname.includes('cdninstagram') || parsed.hostname.includes('fbcdn');
 
     if (!isDomainAllowed) {
       return res.status(403).send('Domínio não permitido');
@@ -187,8 +193,8 @@ app.get('/api/proxy-image', async (req, res) => {
     const imageRes = await fetch(imageUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
-        'Referer': 'https://www.instagram.com/',
-        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        Referer: 'https://www.instagram.com/',
+        Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
     });
 
@@ -198,11 +204,11 @@ app.get('/api/proxy-image', async (req, res) => {
 
     const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+    res.setHeader('Cache-Control', 'public, max-age=86400');
 
     const arrayBuffer = await imageRes.arrayBuffer();
     return res.send(Buffer.from(arrayBuffer));
-  } catch (err: any) {
+  } catch {
     return res.status(500).send('Erro no proxy de imagem');
   }
 });
