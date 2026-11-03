@@ -72,14 +72,20 @@ export default function App() {
     setRealConnections([]);
 
     try {
-      // Connect to the official Apify Instagram backend API route
-      const response = await fetch(`/api/instagram/profile?username=${encodeURIComponent(clean)}`);
+      // Connect to the official Apify Instagram backend API route with auto-retry on 5xx
+      let response = await fetch(`/api/instagram/profile?username=${encodeURIComponent(clean)}`);
       
+      // Automatic single retry on server timeout/cold start
+      if (!response.ok && (response.status >= 500 || response.status === 429)) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        response = await fetch(`/api/instagram/profile?username=${encodeURIComponent(clean)}`);
+      }
+
       if (response.ok) {
         const liveData: InstagramProfile = await response.json();
 
-        // O perfil não pode ser privado - o sistema só funciona para perfis públicos abertos
-        if (liveData.isPrivate) {
+        // O perfil só é considerado privado se a propriedade isPrivate for comprovadamente true
+        if (liveData.isPrivate === true) {
           setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
           setIsSearchingProfile(false);
           return;
@@ -88,7 +94,7 @@ export default function App() {
         const liveMetrics = generateScanMetrics(
           liveData.handle,
           liveData.followersCount,
-          liveData.isPrivate
+          false
         );
         setCurrentProfile(liveData);
         setMetrics(liveMetrics);
@@ -114,16 +120,21 @@ export default function App() {
       } else {
         const errJson = await response.json().catch(() => ({}));
         
-        // Apenas se o perfil realmente não existir no Instagram
-        if (response.status === 404 || errJson.code === 'NOT_FOUND' || errJson.code === 'PROFILE_NOT_FOUND') {
-          setSearchError('Esse perfil não existe no Instagram. Por favor, digite um perfil válido.');
-        } else {
-          // Em qualquer outro caso (perfil privado ou inacessível):
+        // 1. Somente se o servidor confirmar categoricamente que é uma conta privada
+        if (errJson.code === 'PRIVATE_PROFILE' || errJson.isPrivate === true) {
           setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
+        } 
+        // 2. Se o perfil realmente não existir no Instagram (404)
+        else if (response.status === 404 || errJson.code === 'NOT_FOUND' || errJson.code === 'PROFILE_NOT_FOUND') {
+          setSearchError('Esse perfil não existe no Instagram. Por favor, digite um perfil válido.');
+        } 
+        // 3. Qualquer outro erro de rede/timeout: NUNCA rotular como privado!
+        else {
+          setSearchError('Não foi possível carregar os dados deste perfil no momento. Por favor, tente novamente em instantes.');
         }
       }
     } catch {
-      setSearchError('Este perfil está privado. Para realizar a análise, você precisa deixar o perfil público (aberto) no Instagram.');
+      setSearchError('Falha temporária de conexão. Por favor, tente novamente em instantes.');
     } finally {
       setIsSearchingProfile(false);
     }

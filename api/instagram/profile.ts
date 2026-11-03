@@ -230,7 +230,7 @@ export default async function handler(req: any, res: any) {
       followingCount,
       postsCount,
       isVerified: Boolean(item.verified),
-      isPrivate: Boolean(item.private || item.isPrivate || item.is_private),
+      isPrivate: item.private === true || item.isPrivate === true || item.is_private === true,
       category: item.businessCategoryName || (item.private ? 'Conta Privada' : 'Perfil Público'),
       externalUrl: item.externalUrl || null,
       isRealData: true,
